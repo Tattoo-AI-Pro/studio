@@ -4,32 +4,33 @@
 
 @layer base {
   :root {
-    --background: 300 33% 96%;
+    --background: 300 33% 98%; /* Very light lavender */
     --foreground: 262 40% 15%;
     --card: 0 0% 100%;
     --card-foreground: 262 40% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 262 40% 15%;
-    --primary: 262 50% 47%;
+    --primary: 262 50% 47%; /* Deep purple */
     --primary-foreground: 300 100% 99%;
     --secondary: 300 25% 92%;
     --secondary-foreground: 262 50% 47%;
     --muted: 300 25% 92%;
     --muted-foreground: 262 30% 40%;
-    --accent: 260 48% 69%;
+    --accent: 260 48% 69%; /* Violet */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 300 20% 88%;
     --input: 300 20% 90%;
-    --ring: 260 48% 69%;
+    --ring: 260 48% 69%; /* Violet */
+    --radius: 0.5rem;
     --chart-1: 262 50% 47%;
     --chart-2: 260 48% 69%;
     --chart-3: 300 33% 96%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
   }
+
   .dark {
     --background: 264 40% 5%;
     --foreground: 300 33% 96%;
@@ -37,19 +38,19 @@
     --card-foreground: 300 33% 96%;
     --popover: 264 40% 5%;
     --popover-foreground: 300 33% 96%;
-    --primary: 260 48% 69%;
+    --primary: 260 48% 69%; /* Violet */
     --primary-foreground: 264 40% 5%;
     --secondary: 264 40% 12%;
     --secondary-foreground: 300 33% 96%;
     --muted: 264 40% 12%;
     --muted-foreground: 300 20% 70%;
-    --accent: 264 40% 12%;
+    --accent: 262 50% 47%; /* Deep purple */
     --accent-foreground: 300 33% 96%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 264 40% 12%;
     --input: 264 40% 12%;
-    --ring: 260 48% 69%;
+    --ring: 260 48% 69%; /* Violet */
     --chart-1: 260 48% 69%;
     --chart-2: 262 50% 47%;
     --chart-3: 264 40% 12%;

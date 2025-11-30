@@ -1,7 +1,19 @@
 import type { AiBook } from './types';
-import { PlaceHolderImages } from './placeholder-images';
 
-const findImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl ?? '';
+// This data is a mock and will be replaced with live data from Firestore.
+// It uses placeholder images for demonstration. In a real scenario,
+// these URLs would come from a user's upload or a generated source.
+
+const placeholderImages = {
+    cover: 'https://picsum.photos/seed/bookcover/1200/800',
+    tattoo1: 'https://picsum.photos/seed/tattoo1/600/800',
+    tattoo2: 'https://picsum.photos/seed/tattoo2/600/800',
+    tattoo3: 'https://picsum.photos/seed/tattoo3/600/800',
+    tattoo4: 'https://picsum.photos/seed/tattoo4/600/800',
+    tattoo5: 'https://picsum.photos/seed/tattoo5/600/800',
+    tattoo6: 'https://picsum.photos/seed/tattoo6/600/800',
+};
+
 
 export const placeholderBook: AiBook = {
   id: '1',
@@ -12,7 +24,7 @@ export const placeholderBook: AiBook = {
   theme: 'Místico',
   targetAudience: 'Pessoas interessadas em espiritualidade, simbologia e tatuagens com significado.',
   tags: ['místico', 'espiritual', 'símbolos', 'significado', '2026'],
-  coverArtUrl: findImage('cover-art-1'),
+  coverArtUrl: placeholderImages.cover,
   price: 99.90,
   promoPrice: 49.90,
   modules: [
@@ -23,7 +35,7 @@ export const placeholderBook: AiBook = {
       images: [
         {
           id: 'img-1',
-          sourceUrl: findImage('tattoo-1'),
+          sourceUrl: placeholderImages.tattoo1,
           aiTitle: 'Voo da Liberdade',
           aiDescription: 'Um avião de papel simbolizando a liberdade, a jornada e a leveza da alma. Ideal para pulsos e tornozelos.',
           aiTheme: 'Minimalista',
@@ -33,7 +45,7 @@ export const placeholderBook: AiBook = {
         },
         {
           id: 'img-4',
-          sourceUrl: findImage('tattoo-4'),
+          sourceUrl: placeholderImages.tattoo4,
           aiTitle: 'Poeira Estelar',
           aiDescription: 'Uma constelação delicada que representa a conexão com o cosmos e o universo interior.',
           aiTheme: 'Celestial',
@@ -42,8 +54,8 @@ export const placeholderBook: AiBook = {
           aiInstagramCaption: 'Escrito nas estrelas. ✨ #celestialtattoo #constellation #startattoo',
         },
         {
-          id: 'img-10',
-          sourceUrl: findImage('tattoo-10'),
+          id: 'img-6',
+          sourceUrl: placeholderImages.tattoo6,
           aiTitle: 'Luz Interior',
           aiDescription: 'Um pequeno sol que representa a energia vital, a luz interior e o otimismo.',
           aiTheme: 'Celestial',
@@ -60,7 +72,7 @@ export const placeholderBook: AiBook = {
       images: [
         {
           id: 'img-2',
-          sourceUrl: findImage('tattoo-2'),
+          sourceUrl: placeholderImages.tattoo2,
           aiTitle: 'Florescer da Alma',
           aiDescription: 'Um braço adornado com flores realistas, simbolizando o florescimento pessoal e a beleza da natureza.',
           aiTheme: 'Floral',
@@ -70,23 +82,13 @@ export const placeholderBook: AiBook = {
         },
         {
           id: 'img-5',
-          sourceUrl: findImage('tattoo-5'),
+          sourceUrl: placeholderImages.tattoo5,
           aiTitle: 'Olhar da Deusa',
           aiDescription: 'Um retrato feminino hiper-realista que captura a força e a serenidade do arquétipo da deusa.',
           aiTheme: 'Retrato',
           aiStyle: 'Realismo',
           aiSeoTags: ['retrato', 'realismo', 'deusa', 'feminina'],
           aiInstagramCaption: 'O poder de um olhar. #portraittattoo #realismtattoo #goddess',
-        },
-        {
-          id: 'img-9',
-          sourceUrl: findImage('tattoo-9'),
-          aiTitle: 'Jardim Secreto',
-          aiDescription: 'Um arranjo floral delicado para ombros e clavículas, criando uma moldura natural e elegante para o corpo.',
-          aiTheme: 'Floral',
-          aiStyle: 'Fine-line',
-          aiSeoTags: ['floral', 'ombro', 'clavícula', 'delicada'],
-          aiInstagramCaption: 'Seu corpo é um jardim. 🌸 #shouldertattoo #floraltattoo #delicatetattoo',
         },
       ],
     },
@@ -97,7 +99,7 @@ export const placeholderBook: AiBook = {
         images: [
             {
                 id: 'img-3',
-                sourceUrl: findImage('tattoo-3'),
+                sourceUrl: placeholderImages.tattoo3,
                 aiTitle: 'Lobo Geométrico',
                 aiDescription: 'A força e a inteligência do lobo representadas em traços geométricos precisos, unindo natureza e ordem.',
                 aiTheme: 'Animal',
@@ -105,26 +107,6 @@ export const placeholderBook: AiBook = {
                 aiSeoTags: ['lobo', 'geométrico', 'animal', 'força'],
                 aiInstagramCaption: 'Instinto e precisão. #wolftattoo #geometrictattoo #animaltattoo',
             },
-            {
-                id: 'img-7',
-                sourceUrl: findImage('tattoo-7'),
-                aiTitle: 'Serpente e Adaga',
-                aiDescription: 'Um design tradicional que simboliza a dualidade da vida e da morte, cura e veneno. Um clássico cheio de poder.',
-                aiTheme: 'Simbólico',
-                aiStyle: 'Tradicional',
-                aiSeoTags: ['tradicional', 'serpente', 'adaga', 'dualidade'],
-                aiInstagramCaption: 'Equilíbrio e poder. 🐍🗡️ #traditionaltattoo #snaketattoo #daggertattoo',
-            },
-            {
-                id: 'img-8',
-                sourceUrl: findImage('tattoo-8'),
-                aiTitle: 'Mãos do Oráculo',
-                aiDescription: 'Mãos adornadas com símbolos místicos, representando a vidência, o destino e a magia.',
-                aiTheme: 'Místico',
-                aiStyle: 'Blackwork',
-                aiSeoTags: ['místico', 'mão', 'oráculo', 'magia'],
-                aiInstagramCaption: 'O futuro em suas mãos. #mystictattoo #handtattoo #magick',
-            }
         ]
     }
   ],

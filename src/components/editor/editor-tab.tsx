@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import type { AiBook, ImageItem } from "@/lib/types";
 import { ModuleSection } from "./module-section";
 import { EditImageSheet } from "./edit-image-sheet";
-import { CompileDialog } from "./compile-dialog";
 import { useToast } from "@/hooks/use-toast";
 
 interface EditorTabProps {
@@ -17,7 +16,6 @@ interface EditorTabProps {
 export function EditorTab({ initialBookState }: EditorTabProps) {
   const [book, setBook] = useState<AiBook>(initialBookState);
   const [editingImage, setEditingImage] = useState<ImageItem | null>(null);
-  const [isCompileDialogOpen, setCompileDialogOpen] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const { toast } = useToast();
 
@@ -44,10 +42,13 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
 
   const handleCompile = () => {
     setIsCompiling(true);
-    setCompileDialogOpen(true);
     // Simulate AI compilation
     setTimeout(() => {
       setIsCompiling(false);
+      toast({
+        title: "Compilation Complete!",
+        description: "Your AI-Book assets are ready.",
+      });
     }, 3000);
   };
 
@@ -84,13 +85,6 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
           if (!open) setEditingImage(null);
         }}
         onSave={handleImageUpdate}
-      />
-
-      <CompileDialog
-        open={isCompileDialogOpen}
-        onOpenChange={setCompileDialogOpen}
-        isCompiling={isCompiling}
-        bookName={book.name}
       />
     </>
   );
