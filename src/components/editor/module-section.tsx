@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { UploadCloud, LoaderCircle } from "lucide-react";
+import { UploadCloud, LoaderCircle, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Modulo, Tatuagem } from "@/lib/types";
@@ -11,15 +11,32 @@ import { Separator } from "@/components/ui/separator";
 import { analyzeImageAndGenerateContent, type ImageAnalysisOutput } from "@/ai/flows/image-analysis-content-generation";
 import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { MoreVertical } from "lucide-react";
+
 
 interface ModuleSectionProps {
   module: Modulo;
   onEditImage: (image: Tatuagem) => void;
   onImagesChange: (images: Tatuagem[]) => void;
   bookId: string;
+  onEditModule: () => void;
+  onDeleteModule: () => void;
 }
 
-export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: ModuleSectionProps) {
+export function ModuleSection({ 
+    module, 
+    onEditImage, 
+    onImagesChange, 
+    bookId, 
+    onEditModule, 
+    onDeleteModule 
+}: ModuleSectionProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,13 +60,10 @@ export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: M
             try {
               const imageDataUri = e.target?.result as string;
               
-              // Call AI to get metadata
               const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent({ imageDataUri });
 
-              // In a real app, you'd upload the image to Firebase Storage and get a URL.
-              // For now, we'll use the data URI as a placeholder capa_url.
               const newTatuagem: Omit<Tatuagem, "id" | "data_criacao" | "data_atualizacao"> = {
-                capa_url: imageDataUri, // Placeholder. Replace with storage URL.
+                capa_url: imageDataUri,
                 titulo: aiContent.suggestedName,
                 descricao_contextual: aiContent.description,
                 tema: aiContent.theme,
@@ -70,7 +84,6 @@ export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: M
                 origem: 'IA',
               };
 
-              // Save the new tattoo metadata to Firestore subcollection
               const tatuagensCollection = collection(firestore, `series/${bookId}/modulos/${module.id}/tatuagens`);
               const docRef = await addDocumentNonBlocking(tatuagensCollection, {
                   ...newTatuagem,
@@ -104,40 +117,64 @@ export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: M
   return (
     <Card className="overflow-hidden">
       <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <CardTitle className="font-semibold text-2xl">{module.titulo}</CardTitle>
-            <CardDescription className="font-sans mt-1 text-base">
-              {module.descricao}
-            </CardDescription>
-          </div>
-          <Button variant="outline" onClick={handleUploadClick} disabled={isUploading}>
-            {isUploading ? (
-              <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                Analisando...
-              </>
-            ) : (
-              <>
-                <UploadCloud className="mr-2 h-4 w-4" />
-                Upload Tatuagens
-              </>
-            )}
-          </Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            multiple
-            accept="image/*"
-          />
+        <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+                <CardTitle className="font-semibold text-2xl">{module.titulo}</CardTitle>
+                <CardDescription className="font-sans mt-1 text-base">
+                {module.descricao}
+                </CardDescription>
+            </div>
+          
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleUploadClick} disabled={isUploading}>
+                    {isUploading ? (
+                    <>
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                        Analisando...
+                    </>
+                    ) : (
+                    <>
+                        <UploadCloud className="mr-2 h-4 w-4" />
+                        Upload
+                    </>
+                    )}
+                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onEditModule}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Editar</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDeleteModule} className="text-destructive focus:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Excluir</span>
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                multiple
+                accept="image/*"
+            />
         </div>
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6">
         {(!module.tatuagens || module.tatuagens.length === 0) && !isUploading && (
-            <p className="text-sm text-muted-foreground text-center py-4">Nenhuma tatuagem neste módulo ainda.</p>
+            <div className="text-center py-8">
+                <h3 className="font-semibold">Nenhuma Tatuagem</h3>
+                <p className="text-sm text-muted-foreground">Comece fazendo o upload de imagens para este módulo.</p>
+            </div>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {(module.tatuagens ?? []).map((image) => (
