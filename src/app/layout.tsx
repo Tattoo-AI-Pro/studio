@@ -2,10 +2,13 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
-import { Inter, Calistoga } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
-const calistoga = Calistoga({ subsets: ['latin'], weight: '400', variable: '--font-headline' });
+const poppins = Poppins({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'],
+  variable: '--font-sans' 
+});
 
 
 export const metadata: Metadata = {
@@ -20,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${calistoga.variable} font-body antialiased`}>
+      <body className={`${poppins.variable} font-sans antialiased`}>
         <FirebaseClientProvider>
           {children}
         </FirebaseClientProvider>

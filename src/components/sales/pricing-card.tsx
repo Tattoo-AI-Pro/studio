@@ -49,24 +49,24 @@ export function PricingCard({ book }: PricingCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Monetização</CardTitle>
-        <CardDescription className="font-body text-base">
+        <CardTitle className="font-semibold text-2xl">Monetização</CardTitle>
+        <CardDescription className="font-sans text-base">
           Defina o preço da sua coleção e crie ofertas promocionais.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="price" className="font-headline">Preço Padrão (BRL)</Label>
+                <Label htmlFor="price" className="font-semibold">Preço Padrão (BRL)</Label>
                 <Input id="price" type="number" placeholder="99.90" value={price} onChange={e => setPrice(Number(e.target.value))}/>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="promo-price" className="font-headline">Preço Promocional (BRL)</Label>
+                <Label htmlFor="promo-price" className="font-semibold">Preço Promocional (BRL)</Label>
                 <Input id="promo-price" type="number" placeholder="49.90" value={promoPrice} onChange={e => setPromoPrice(Number(e.target.value))} />
             </div>
         </div>
         <div className="space-y-2">
-            <Label htmlFor="coupon" className="font-headline">Cupom de Lançamento</Label>
+            <Label htmlFor="coupon" className="font-semibold">Cupom de Lançamento</Label>
             <div className="flex gap-2">
                 <Input id="coupon" placeholder="LANCAMENTO25" />
                 <Button variant="outline" size="icon">

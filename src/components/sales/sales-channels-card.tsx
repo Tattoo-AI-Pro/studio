@@ -40,8 +40,8 @@ export function SalesChannelsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Canais de Venda</CardTitle>
-        <CardDescription className="font-body text-base">
+        <CardTitle className="font-semibold text-2xl">Canais de Venda</CardTitle>
+        <CardDescription className="font-sans text-base">
           Integre com sua plataforma favorita ou use nosso link universal.
         </CardDescription>
       </CardHeader>
@@ -66,7 +66,7 @@ export function SalesChannelsCard() {
             <Copy className="w-4 h-4 mr-2" />
             Copiar Link de Vendas Universal
           </Button>
-          <p className="text-xs text-muted-foreground font-body">Use este link onde você quiser vender.</p>
+          <p className="text-xs text-muted-foreground font-sans">Use este link onde você quiser vender.</p>
       </CardFooter>
     </Card>
   );

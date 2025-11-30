@@ -96,8 +96,8 @@ export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: M
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
-            <CardTitle className="font-headline text-2xl">{module.name}</CardTitle>
-            <CardDescription className="font-body mt-1 text-base">
+            <CardTitle className="font-semibold text-2xl">{module.name}</CardTitle>
+            <CardDescription className="font-sans mt-1 text-base">
               {module.description}
             </CardDescription>
           </div>

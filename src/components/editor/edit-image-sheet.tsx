@@ -62,17 +62,17 @@ export function EditImageSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-lg w-[90vw] overflow-y-auto">
         <SheetHeader className="text-left">
-          <SheetTitle className="font-headline text-2xl">
+          <SheetTitle className="font-semibold text-2xl">
             Edit Image Details
           </SheetTitle>
-          <SheetDescription className="font-body text-base flex items-center gap-2">
+          <SheetDescription className="font-sans text-base flex items-center gap-2">
             <Bot className="w-4 h-4 text-primary" />
             <span>AI suggestions are pre-filled. Adjust as needed.</span>
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-6 py-6">
           <div className="grid gap-3">
-            <Label htmlFor="aiTitle" className="font-headline">Suggested Name</Label>
+            <Label htmlFor="aiTitle" className="font-semibold">Suggested Name</Label>
             <Input
               id="aiTitle"
               name="aiTitle"
@@ -82,7 +82,7 @@ export function EditImageSheet({
           </div>
           <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-3">
-              <Label htmlFor="aiTheme" className="font-headline">Theme</Label>
+              <Label htmlFor="aiTheme" className="font-semibold">Theme</Label>
               <Input
                 id="aiTheme"
                 name="aiTheme"
@@ -91,7 +91,7 @@ export function EditImageSheet({
               />
             </div>
              <div className="grid gap-3">
-              <Label htmlFor="aiStyle" className="font-headline">Style</Label>
+              <Label htmlFor="aiStyle" className="font-semibold">Style</Label>
               <Input
                 id="aiStyle"
                 name="aiStyle"
@@ -101,17 +101,17 @@ export function EditImageSheet({
             </div>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiDescription" className="font-headline">Description</Label>
+            <Label htmlFor="aiDescription" className="font-semibold">Description</Label>
             <Textarea
               id="aiDescription"
               name="aiDescription"
               value={formData.aiDescription || ""}
               onChange={handleChange}
-              className="min-h-[100px] font-body"
+              className="min-h-[100px] font-sans"
             />
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiSeoTags" className="font-headline">SEO Tags</Label>
+            <Label htmlFor="aiSeoTags" className="font-semibold">SEO Tags</Label>
             <Input
               id="aiSeoTags"
               value={tagsInput}
@@ -125,13 +125,13 @@ export function EditImageSheet({
             </div>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiInstagramCaption" className="font-headline">Instagram Caption</Label>
+            <Label htmlFor="aiInstagramCaption" className="font-semibold">Instagram Caption</Label>
             <Textarea
               id="aiInstagramCaption"
               name="aiInstagramCaption"
               value={formData.aiInstagramCaption || ""}
               onChange={handleChange}
-              className="min-h-[120px] font-body"
+              className="min-h-[120px] font-sans"
             />
           </div>
         </div>

@@ -60,8 +60,8 @@ export function CompileDialog({
       </DialogHeader>
       <div className="flex flex-col items-center justify-center gap-4 py-12">
         <LoaderCircle className="w-12 h-12 text-primary animate-spin" />
-        <h3 className="font-headline text-2xl">Compilando seu AI-Book...</h3>
-        <p className="font-body text-muted-foreground text-center">
+        <h3 className="font-semibold text-2xl">Compilando seu AI-Book...</h3>
+        <p className="font-sans text-muted-foreground text-center">
           A IA está trabalhando sua mágica: gerando PDFs, arte de capa e mais.
           <br />
           Isso pode levar um momento.
@@ -74,10 +74,10 @@ export function CompileDialog({
     <>
       <DialogHeader className="text-center items-center">
         <PartyPopper className="w-12 h-12 text-primary" />
-        <DialogTitle className="font-headline text-3xl">
+        <DialogTitle className="font-semibold text-3xl">
           Compilação Completa!
         </DialogTitle>
-        <DialogDescription className="font-body text-base">
+        <DialogDescription className="font-sans text-base">
           Sua coleção "{bookName}" e seus ativos foram gerados.
         </DialogDescription>
       </DialogHeader>
@@ -86,7 +86,7 @@ export function CompileDialog({
           <div className="flex items-center gap-4">
             <FileText className="w-6 h-6 text-primary" />
             <div>
-              <p className="font-headline text-lg">Versão em PDF</p>
+              <p className="font-semibold text-lg">Versão em PDF</p>
               <p className="text-sm text-muted-foreground">
                 Em breve para download
               </p>
@@ -100,7 +100,7 @@ export function CompileDialog({
           <div className="flex items-center gap-4">
             <ImageIcon className="w-6 h-6 text-primary" />
             <div>
-              <p className="font-headline text-lg">Arte de Capa</p>
+              <p className="font-semibold text-lg">Arte de Capa</p>
               <p className="text-sm text-muted-foreground">Em breve para download</p>
             </div>
           </div>
@@ -112,7 +112,7 @@ export function CompileDialog({
           <div className="flex items-center gap-4">
             <Globe className="w-6 h-6 text-primary" />
             <div>
-              <p className="font-headline text-lg">Site de Vendas & Versão Web</p>
+              <p className="font-semibold text-lg">Site de Vendas & Versão Web</p>
               <a
                 href={compilationResult?.webVersionUrl || '#'}
                 target="_blank"
@@ -138,7 +138,7 @@ export function CompileDialog({
             <div className="flex items-center gap-4">
               <Sparkles className="w-6 h-6 text-primary" />
               <div>
-                <p className="font-headline text-lg">Cópia de Marketing</p>
+                <p className="font-semibold text-lg">Cópia de Marketing</p>
                 <p className="text-sm text-muted-foreground">
                   Pronta para usar em suas campanhas
                 </p>

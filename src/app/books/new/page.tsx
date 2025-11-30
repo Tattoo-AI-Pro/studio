@@ -65,7 +65,7 @@ export default function NewBookPage() {
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
       <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-      <h1 className="font-headline text-2xl">Criando sua nova coleção...</h1>
+      <h1 className="font-semibold text-2xl">Criando sua nova coleção...</h1>
       <p className="text-muted-foreground">Aguarde, estamos preparando tudo para você.</p>
     </div>
   );

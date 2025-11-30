@@ -39,8 +39,8 @@ export function AnalyticsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Análise de Vendas</CardTitle>
-        <CardDescription className="font-body text-base">
+        <CardTitle className="font-semibold text-2xl">Análise de Vendas</CardTitle>
+        <CardDescription className="font-sans text-base">
           Uma visão geral da performance da sua coleção.
         </CardDescription>
       </CardHeader>

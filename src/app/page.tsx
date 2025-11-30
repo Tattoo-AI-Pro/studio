@@ -28,7 +28,7 @@ const dashboardMetrics = [
     value: "345",
     icon: ImageIcon,
     description: "+42 este mês",
-    color: "text-accent",
+    color: "text-blue-500",
   },
   {
     title: "Vendas Totais",
@@ -74,10 +74,10 @@ function MyCollections() {
   return (
     <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
       {books.map((book) => (
-        <Card key={book.id}>
+        <Card key={book.id} className="bg-[#030303]">
           <CardHeader>
-            <CardTitle className="font-headline truncate">{book.name}</CardTitle>
-            <CardDescription className="font-body line-clamp-2">{book.shortDescription}</CardDescription>
+            <CardTitle className="font-semibold truncate">{book.name}</CardTitle>
+            <CardDescription className="font-sans line-clamp-2">{book.shortDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -98,10 +98,10 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card/80 backdrop-blur-sm px-4 md:px-6 z-10">
+      <header className="sticky top-0 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6 z-10">
         <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Book className="h-6 w-6 text-primary" />
-          <span className="font-headline text-2xl tracking-wide">
+          <span className="font-semibold text-xl tracking-wide truncate">
             Estúdio de Tatuagem
           </span>
         </div>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="flex items-center">
           <div>
-            <h1 className="font-headline text-3xl font-semibold">
+            <h1 className="font-semibold text-3xl">
               Dashboard
             </h1>
             {!isUserLoading && user && (
@@ -132,9 +132,9 @@ export default function DashboardPage() {
         </div>
 
         {!user && !isUserLoading && (
-          <Card>
+          <Card className="bg-[#f3f3f3] dark:bg-[#030303]">
             <CardHeader>
-              <CardTitle className="font-headline">Bem-vindo ao Estúdio de Tatuagem</CardTitle>
+              <CardTitle className="font-semibold">Bem-vindo ao Estúdio de Tatuagem</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
@@ -150,9 +150,9 @@ export default function DashboardPage() {
           <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {dashboardMetrics.map((metric) => (
-                <Card key={metric.title}>
+                <Card key={metric.title} className="bg-[#f3f3f3] dark:bg-[#030303]">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium font-body">
+                    <CardTitle className="text-sm font-medium">
                       {metric.title}
                     </CardTitle>
                     <metric.icon className="h-4 w-4 text-muted-foreground" />
@@ -170,7 +170,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-4">
-              <h2 className="font-headline text-2xl font-semibold">
+              <h2 className="font-semibold text-2xl">
                 Minhas Coleções
               </h2>
               <MyCollections />

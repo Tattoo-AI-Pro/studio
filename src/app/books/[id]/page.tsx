@@ -30,7 +30,7 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
         return (
              <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
                 <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
-                <h1 className="font-headline text-2xl">Carregando sua coleção...</h1>
+                <h1 className="font-semibold text-2xl">Carregando sua coleção...</h1>
                 <p className="text-muted-foreground">Aguarde, estamos buscando as informações.</p>
             </div>
         )
@@ -39,7 +39,7 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
     if (!book) {
         return (
             <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background text-center">
-                <h1 className="font-headline text-2xl">Coleção não encontrada.</h1>
+                <h1 className="font-semibold text-2xl">Coleção não encontrada.</h1>
                 <p className="text-muted-foreground">Não conseguimos encontrar a coleção que você está procurando.</p>
                  <Button asChild variant="outline">
                     <Link href="/">Voltar ao Dashboard</Link>
@@ -57,14 +57,14 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
-        <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card/80 backdrop-blur-sm px-4 md:px-6 z-20">
+        <header className="sticky top-0 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6 z-20">
             <nav className="flex-1 flex items-center gap-4">
             <Link
                 href="/"
                 className="flex items-center gap-2 text-lg font-semibold md:text-base text-foreground/80 hover:text-foreground transition-colors"
             >
                 <Book className="h-6 w-6 text-primary" />
-                <span className="font-headline text-2xl tracking-wide">
+                <span className="font-semibold text-xl tracking-wide truncate">
                 Estúdio de Tatuagem
                 </span>
             </Link>
@@ -81,14 +81,14 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
         </header>
         <main className="flex flex-1 flex-col">
             <Tabs defaultValue="editor" className="flex-1">
-            <div className="sticky top-16 bg-card/90 backdrop-blur-sm z-10 border-b">
+            <div className="sticky top-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
                     <div className="text-center sm:text-left">
-                        <p className="text-sm text-muted-foreground font-body">
+                        <p className="text-sm text-muted-foreground font-sans">
                             Coleção
                         </p>
-                        <h1 className="font-headline text-3xl">{book.name}</h1>
+                        <h1 className="font-semibold text-3xl">{book.name}</h1>
                     </div>
                     <TabsList className="grid w-full max-w-xs grid-cols-2">
                     <TabsTrigger value="editor">
