@@ -1,16 +1,19 @@
 "use client";
 
-import { Book, DollarSign, Image as ImageIcon, PlusCircle } from "lucide-react";
+import { Book, DollarSign, Image as ImageIcon, PlusCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
-import { useUser } from "@/firebase";
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import type { AiBook } from "@/lib/types";
 
 const dashboardMetrics = [
   {
@@ -35,6 +38,60 @@ const dashboardMetrics = [
     color: "text-green-500",
   },
 ];
+
+function MyCollections() {
+  const firestore = useFirestore();
+  const { user } = useUser();
+
+  const collectionsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(
+      collection(firestore, "ai_books"),
+      where("ownerId", "==", user.uid)
+    );
+  }, [firestore, user]);
+
+  const { data: books, isLoading } = useCollection<AiBook>(collectionsQuery);
+
+  if (isLoading) {
+    return (
+      <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
+        <p className="text-muted-foreground">Carregando coleções...</p>
+      </div>
+    );
+  }
+
+  if (!books || books.length === 0) {
+    return (
+      <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
+        <p className="text-muted-foreground">
+          Suas coleções de tatuagens aparecerão aqui.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+      {books.map((book) => (
+        <Card key={book.id}>
+          <CardHeader>
+            <CardTitle className="font-headline truncate">{book.name}</CardTitle>
+            <CardDescription className="font-body line-clamp-2">{book.shortDescription}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href={`/books/${book.id}`}>
+                Editar Coleção <ExternalLink className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -116,12 +173,7 @@ export default function DashboardPage() {
               <h2 className="font-headline text-2xl font-semibold">
                 Minhas Coleções
               </h2>
-              {/* Aqui listaremos as coleções de tatuagens no futuro */}
-              <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
-                <p className="text-muted-foreground">
-                  Suas coleções de tatuagens aparecerão aqui.
-                </p>
-              </div>
+              <MyCollections />
             </div>
           </>
         )}
