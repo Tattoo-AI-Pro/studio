@@ -20,43 +20,43 @@ const channels = [
 ];
 
 // Dummy SVGs as files can't be created
-const KiwifyLogo = () => <svg viewBox="0 0 100 20"><text y="15">Kiwify</text></svg>;
-const HotmartLogo = () => <svg viewBox="0 0 100 20"><text y="15">Hotmart</text></svg>;
-const ShopifyLogo = () => <svg viewBox="0 0 100 20"><text y="15">Shopify</text></svg>;
-const GumroadLogo = () => <svg viewBox="0 0 100 20"><text y="15">Gumroad</text></svg>;
+const KiwifyLogo = () => <svg className="w-24 h-auto" viewBox="0 0 100 20"><text y="15" fontSize="12" fill="currentColor">Kiwify</text></svg>;
+const HotmartLogo = () => <svg className="w-24 h-auto" viewBox="0 0 100 20"><text y="15" fontSize="12" fill="currentColor">Hotmart</text></svg>;
+const ShopifyLogo = () => <svg className="w-24 h-auto" viewBox="0 0 100 20"><text y="15" fontSize="12" fill="currentColor">Shopify</text></svg>;
+const GumroadLogo = () => <svg className="w-24 h-auto" viewBox="0 0 100 20"><text y="15" fontSize="12" fill="currentColor">Gumroad</text></svg>;
 
 
 export function SalesChannelsCard() {
     const { toast } = useToast();
 
     const copyLink = () => {
-        navigator.clipboard.writeText("https://your-ai-book-factory.com/sale/1");
+        navigator.clipboard.writeText("https://seuestudio.com/vender/123-abc");
         toast({
-            title: "Link Copied",
-            description: "Your universal sales link has been copied.",
+            title: "Link Copiado",
+            description: "Seu link de vendas universal foi copiado.",
         });
     }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Sales Channels</CardTitle>
+        <CardTitle className="font-headline text-2xl">Canais de Venda</CardTitle>
         <CardDescription className="font-body text-base">
-          Integrate with your favorite platform or use our universal link.
+          Integre com sua plataforma favorita ou use nosso link universal.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20">
+            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20 text-muted-foreground">
                 <KiwifyLogo />
             </div>
-            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20">
+            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20 text-muted-foreground">
                 <HotmartLogo />
             </div>
-            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20">
+            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20 text-muted-foreground">
                 <ShopifyLogo />
             </div>
-            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20">
+            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-md h-20 text-muted-foreground">
                 <GumroadLogo />
             </div>
         </div>
@@ -64,9 +64,9 @@ export function SalesChannelsCard() {
        <CardFooter className="flex-col gap-2">
           <Button className="w-full" onClick={copyLink}>
             <Copy className="w-4 h-4 mr-2" />
-            Copy Universal Sales Link
+            Copiar Link de Vendas Universal
           </Button>
-          <p className="text-xs text-muted-foreground font-body">Use this link anywhere you want to sell.</p>
+          <p className="text-xs text-muted-foreground font-body">Use este link onde você quiser vender.</p>
       </CardFooter>
     </Card>
   );

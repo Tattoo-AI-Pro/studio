@@ -39,9 +39,9 @@ export function AnalyticsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Sales Analytics</CardTitle>
+        <CardTitle className="font-headline text-2xl">Análise de Vendas</CardTitle>
         <CardDescription className="font-body text-base">
-          An overview of your AI-Book's performance.
+          Uma visão geral da performance da sua coleção.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -65,10 +65,10 @@ export function AnalyticsCard() {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          <TrendingUp className="h-4 w-4" /> 35.7% more sales this month
+          <TrendingUp className="h-4 w-4" /> 35.7% mais vendas este mês
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total sales for the last 6 months
+          Mostrando o total de vendas dos últimos 6 meses
         </div>
       </CardFooter>
     </Card>

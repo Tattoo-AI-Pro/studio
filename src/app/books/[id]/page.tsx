@@ -1,19 +1,51 @@
 "use client";
-import React from 'react';
+import React, { use } from 'react';
 import { Book, Palette, ShoppingCart, ArrowLeft, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { placeholderBook } from "@/lib/placeholder-data";
 import type { AiBook } from "@/lib/types";
 import { EditorTab } from "@/components/editor/editor-tab";
 import { SalesTab } from "@/components/sales/sales-tab";
 import { AuthButton } from "@/components/auth-button";
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 
-export default function BookEditorPage({ params }: { params: { id: string } }) {
-    const book = placeholderBook; // Using placeholder for now
+export default function BookEditorPage({ params: paramsPromise }: { params: { id: string } }) {
+    const firestore = useFirestore();
+    const params = use(paramsPromise);
+    const { id: bookId } = params;
+
+    const bookRef = useMemoFirebase(() => {
+        if (!bookId) return null;
+        return doc(firestore, "ai_books", bookId);
+    }, [firestore, bookId]);
+
+    const { data: book, isLoading } = useDoc<AiBook>(bookRef);
+
+    if (isLoading) {
+        return (
+             <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
+                <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+                <h1 className="font-headline text-2xl">Carregando sua coleção...</h1>
+                <p className="text-muted-foreground">Aguarde, estamos buscando as informações.</p>
+            </div>
+        )
+    }
+
+    if (!book) {
+        return (
+            <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background text-center">
+                <h1 className="font-headline text-2xl">Coleção não encontrada.</h1>
+                <p className="text-muted-foreground">Não conseguimos encontrar a coleção que você está procurando.</p>
+                 <Button asChild variant="outline">
+                    <Link href="/">Voltar ao Dashboard</Link>
+                </Button>
+            </div>
+        )
+    }
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
@@ -69,7 +101,7 @@ export default function BookEditorPage({ params }: { params: { id: string } }) {
                     <EditorTab initialBookState={book} />
                 </TabsContent>
                 <TabsContent value="sales" className="focus-visible:ring-0 focus-visible:ring-offset-0">
-                    <SalesTab />
+                    <SalesTab book={book} />
                 </TabsContent>
             </div>
             </Tabs>
