@@ -1,7 +1,9 @@
+
 "use client";
 
-import { Book, DollarSign, Image as ImageIcon, PlusCircle, ExternalLink } from "lucide-react";
+import { Book, DollarSign, Image as ImageIcon, PlusCircle, Pencil } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -72,21 +74,33 @@ function MyCollections() {
   }
 
   return (
-    <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {books.map((book) => (
-        <Card key={book.id} className="bg-[#030303]">
-          <CardHeader>
-            <CardTitle className="font-semibold truncate">{book.name}</CardTitle>
-            <CardDescription className="font-sans line-clamp-2">{book.shortDescription}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href={`/books/${book.id}`}>
-                Editar Coleção <ExternalLink className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <Link key={book.id} href={`/books/${book.id}`} className="group block">
+          <Card className="overflow-hidden relative aspect-[3/4] bg-card">
+            {book.coverArtUrl ? (
+              <Image
+                src={book.coverArtUrl}
+                alt={`Capa da coleção ${book.name}`}
+                fill
+                className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                data-ai-hint="book cover"
+              />
+            ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Book className="w-12 h-12 text-muted-foreground" />
+                </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <div className="absolute inset-0 flex flex-col justify-end p-4">
+              <h3 className="font-semibold text-lg text-white truncate">{book.name}</h3>
+            </div>
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <Pencil className="w-8 h-8 text-white" />
+            </div>
+          </Card>
+        </Link>
       ))}
     </div>
   )
@@ -132,7 +146,7 @@ export default function DashboardPage() {
         </div>
 
         {!user && !isUserLoading && (
-          <Card className="bg-[#f3f3f3] dark:bg-[#030303]">
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle className="font-semibold">Bem-vindo ao Estúdio de Tatuagem</CardTitle>
             </CardHeader>
@@ -150,7 +164,7 @@ export default function DashboardPage() {
           <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {dashboardMetrics.map((metric) => (
-                <Card key={metric.title} className="bg-[#f3f3f3] dark:bg-[#030303]">
+                <Card key={metric.title} className="bg-card">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       {metric.title}
