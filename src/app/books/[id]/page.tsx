@@ -1,5 +1,5 @@
 "use client";
-
+import React from 'react';
 import { Book, Palette, ShoppingCart, ArrowLeft, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -27,8 +27,8 @@ function BookHeaderSkeleton() {
 
 
 export default function BookEditorPage({ params }: { params: { id: string } }) {
+  const { id: bookId } = React.use(params);
   const firestore = useFirestore();
-  const { id: bookId } = params;
 
   const bookRef = useMemoFirebase(() => {
     if (!bookId) return null;
