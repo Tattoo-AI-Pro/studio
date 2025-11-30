@@ -11,6 +11,7 @@ import { AuthButton } from "@/components/auth-button";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 function BookHeaderSkeleton() {
   return (
@@ -27,11 +28,12 @@ function BookHeaderSkeleton() {
 
 export default function BookEditorPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
+  const { id: bookId } = params;
 
   const bookRef = useMemoFirebase(() => {
-    if (!params.id) return null;
-    return doc(firestore, "ai_books", params.id);
-  }, [firestore, params.id]);
+    if (!bookId) return null;
+    return doc(firestore, "ai_books", bookId);
+  }, [firestore, bookId]);
 
   const { data: book, isLoading } = useDoc<AiBook>(bookRef);
 
