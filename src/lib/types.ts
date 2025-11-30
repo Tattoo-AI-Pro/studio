@@ -1,13 +1,14 @@
 
 export interface ImageItem {
   id: string;
+  moduleId: string;
   sourceUrl: string; // URL from an image store (e.g. Firebase Storage or other)
-  aiTitle: string;
-  aiDescription: string;
-  aiTheme: string;
-  aiStyle: string;
-  aiSeoTags: string[];
-  aiInstagramCaption: string;
+  title: string;
+  description: string;
+  theme: string;
+  style: string;
+  tags: string[];
+  instagramCaption: string;
 }
 
 export interface Module {

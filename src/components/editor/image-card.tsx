@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -18,7 +19,7 @@ export function ImageCard({ image, onEdit }: ImageCardProps) {
       <CardContent className="p-0">
         <Image
           src={image.sourceUrl}
-          alt={image.aiTitle}
+          alt={image.title}
           width={300}
           height={400}
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"

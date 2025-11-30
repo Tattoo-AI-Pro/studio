@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -37,7 +38,7 @@ export function EditImageSheet({
   useEffect(() => {
     if (image) {
       setFormData(image);
-      setTagsInput(image.aiSeoTags.join(", "));
+      setTagsInput(image.tags.join(", "));
     }
   }, [image]);
 
@@ -46,7 +47,7 @@ export function EditImageSheet({
   const handleSave = () => {
     onSave({
       ...formData,
-      aiSeoTags: tagsInput.split(",").map((tag) => tag.trim()).filter(Boolean),
+      tags: tagsInput.split(",").map((tag) => tag.trim()).filter(Boolean),
     } as ImageItem);
     onOpenChange(false);
   };
@@ -72,48 +73,48 @@ export function EditImageSheet({
         </SheetHeader>
         <div className="grid gap-6 py-6">
           <div className="grid gap-3">
-            <Label htmlFor="aiTitle" className="font-semibold">Suggested Name</Label>
+            <Label htmlFor="title" className="font-semibold">Suggested Name</Label>
             <Input
-              id="aiTitle"
-              name="aiTitle"
-              value={formData.aiTitle || ""}
+              id="title"
+              name="title"
+              value={formData.title || ""}
               onChange={handleChange}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-3">
-              <Label htmlFor="aiTheme" className="font-semibold">Theme</Label>
+              <Label htmlFor="theme" className="font-semibold">Theme</Label>
               <Input
-                id="aiTheme"
-                name="aiTheme"
-                value={formData.aiTheme || ""}
+                id="theme"
+                name="theme"
+                value={formData.theme || ""}
                 onChange={handleChange}
               />
             </div>
              <div className="grid gap-3">
-              <Label htmlFor="aiStyle" className="font-semibold">Style</Label>
+              <Label htmlFor="style" className="font-semibold">Style</Label>
               <Input
-                id="aiStyle"
-                name="aiStyle"
-                value={formData.aiStyle || ""}
+                id="style"
+                name="style"
+                value={formData.style || ""}
                 onChange={handleChange}
               />
             </div>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiDescription" className="font-semibold">Description</Label>
+            <Label htmlFor="description" className="font-semibold">Description</Label>
             <Textarea
-              id="aiDescription"
-              name="aiDescription"
-              value={formData.aiDescription || ""}
+              id="description"
+              name="description"
+              value={formData.description || ""}
               onChange={handleChange}
               className="min-h-[100px] font-sans"
             />
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiSeoTags" className="font-semibold">SEO Tags</Label>
+            <Label htmlFor="tags" className="font-semibold">SEO Tags</Label>
             <Input
-              id="aiSeoTags"
+              id="tags"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g. minimalist, fine-line, floral"
@@ -125,11 +126,11 @@ export function EditImageSheet({
             </div>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="aiInstagramCaption" className="font-semibold">Instagram Caption</Label>
+            <Label htmlFor="instagramCaption" className="font-semibold">Instagram Caption</Label>
             <Textarea
-              id="aiInstagramCaption"
-              name="aiInstagramCaption"
-              value={formData.aiInstagramCaption || ""}
+              id="instagramCaption"
+              name="instagramCaption"
+              value={formData.instagramCaption || ""}
               onChange={handleChange}
               className="min-h-[120px] font-sans"
             />

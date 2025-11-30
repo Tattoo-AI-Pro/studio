@@ -49,7 +49,7 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
 
     toast({
       title: "Imagem salva!",
-      description: `"${updatedImage.aiTitle}" foi atualizada com sucesso.`,
+      description: `"${updatedImage.title}" foi atualizada com sucesso.`,
     });
   };
 

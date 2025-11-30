@@ -48,13 +48,14 @@ export function ModuleSection({ module, onEditImage, onImagesChange, bookId }: M
               // In a real app, you'd upload the image to Firebase Storage and get a URL.
               // For now, we'll use the data URI as a placeholder sourceUrl.
               const newImage: Omit<ImageItem, "id"> = {
+                moduleId: module.id,
                 sourceUrl: imageDataUri, // Placeholder. Replace with storage URL.
-                aiTitle: aiContent.suggestedName,
-                aiDescription: aiContent.description,
-                aiTheme: aiContent.theme,
-                aiStyle: aiContent.style,
-                aiSeoTags: aiContent.seoTags,
-                aiInstagramCaption: aiContent.instagramCaption,
+                title: aiContent.suggestedName,
+                description: aiContent.description,
+                theme: aiContent.theme,
+                style: aiContent.style,
+                tags: aiContent.seoTags,
+                instagramCaption: aiContent.instagramCaption,
               };
 
               // Save the new image metadata to Firestore subcollection
