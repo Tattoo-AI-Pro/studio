@@ -1,12 +1,13 @@
+
 "use client";
 
-import type { AiBook } from "@/lib/types";
+import type { Serie } from "@/lib/types";
 import { AnalyticsCard } from "./analytics-card";
 import { PricingCard } from "./pricing-card";
 import { SalesChannelsCard } from "./sales-channels-card";
 
 interface SalesTabProps {
-  book: AiBook;
+  book: Serie;
 }
 
 export function SalesTab({ book }: SalesTabProps) {

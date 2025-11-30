@@ -2,11 +2,11 @@
 "use client";
 
 import Image from "next/image";
-import type { ImageItem } from "@/lib/types";
+import type { Tatuagem } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ImageCardProps {
-  image: ImageItem;
+  image: Tatuagem;
   onEdit: () => void;
 }
 
@@ -18,8 +18,8 @@ export function ImageCard({ image, onEdit }: ImageCardProps) {
     >
       <CardContent className="p-0">
         <Image
-          src={image.sourceUrl}
-          alt={image.title}
+          src={image.capa_url}
+          alt={image.titulo}
           width={300}
           height={400}
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"

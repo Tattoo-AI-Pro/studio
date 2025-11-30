@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { AiBook } from "@/lib/types";
+import type { Serie } from "@/lib/types";
 import { EditorTab } from "@/components/editor/editor-tab";
 import { SalesTab } from "@/components/sales/sales-tab";
 import { AuthButton } from "@/components/auth-button";
@@ -21,10 +21,10 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
 
     const bookRef = useMemoFirebase(() => {
         if (!bookId) return null;
-        return doc(firestore, "ai_books", bookId);
+        return doc(firestore, "series", bookId);
     }, [firestore, bookId]);
 
-    const { data: book, isLoading } = useDoc<AiBook>(bookRef);
+    const { data: book, isLoading } = useDoc<Serie>(bookRef);
 
     if (isLoading) {
         return (
@@ -48,11 +48,25 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
         )
     }
     
-    const bookWithDefaults = {
+    const bookWithDefaults: Serie = {
+        ...{
+            titulo: '',
+            modulos: [],
+            preco: 0,
+            publico_alvo: '',
+            descricao: '',
+            capa_url: '',
+            status: 'rascunho',
+            data_criacao: null,
+            data_atualizacao: null,
+            autor_id: '',
+            tags_gerais: [],
+            modulos_count: 0,
+            tatuagens_count: 0,
+        },
         ...book,
-        modules: book.modules ?? [],
-        price: book.price ?? 0,
-        promoPrice: book.promoPrice ?? 0,
+        modulos: book.modulos ?? [],
+        preco: book.preco ?? 0,
     }
 
     return (
@@ -86,9 +100,9 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
                     <div className="text-center sm:text-left">
                         <p className="text-sm text-muted-foreground font-sans">
-                            Coleção
+                            Série
                         </p>
-                        <h1 className="font-semibold text-3xl">{book.name}</h1>
+                        <h1 className="font-semibold text-3xl">{book.titulo}</h1>
                     </div>
                     <TabsList className="grid w-full max-w-xs grid-cols-2">
                     <TabsTrigger value="editor">

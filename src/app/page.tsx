@@ -15,11 +15,11 @@ import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
-import type { AiBook } from "@/lib/types";
+import type { Serie } from "@/lib/types";
 
 const dashboardMetrics = [
   {
-    title: "Coleções Criadas",
+    title: "Séries Criadas",
     value: "12",
     icon: Book,
     description: "+2 este mês",
@@ -48,12 +48,12 @@ function MyCollections() {
   const collectionsQuery = useMemoFirebase(() => {
     if (!user) return null;
     return query(
-      collection(firestore, "ai_books"),
-      where("ownerId", "==", user.uid)
+      collection(firestore, "series"),
+      where("autor_id", "==", user.uid)
     );
   }, [firestore, user]);
 
-  const { data: books, isLoading } = useCollection<AiBook>(collectionsQuery);
+  const { data: series, isLoading } = useCollection<Serie>(collectionsQuery);
 
   if (isLoading) {
     return (
@@ -63,7 +63,7 @@ function MyCollections() {
     );
   }
 
-  if (!books || books.length === 0) {
+  if (!series || series.length === 0) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
         <p className="text-muted-foreground">
@@ -75,16 +75,16 @@ function MyCollections() {
 
   return (
     <div className="grid gap-6 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {books.map((book) => {
-        const coverImage = book.modules?.[0]?.images?.[0]?.sourceUrl;
+      {series.map((serie) => {
+        const coverImage = serie.capa_url;
 
         return (
-          <Link key={book.id} href={`/books/${book.id}`} className="group block">
+          <Link key={serie.id} href={`/books/${serie.id}`} className="group block">
             <Card className="overflow-hidden relative aspect-[3/4] bg-card">
               {coverImage ? (
                 <Image
                   src={coverImage}
-                  alt={`Capa da coleção ${book.name}`}
+                  alt={`Capa da coleção ${serie.titulo}`}
                   fill
                   className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
@@ -97,7 +97,7 @@ function MyCollections() {
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
               <div className="absolute inset-0 flex flex-col justify-end p-4">
-                <h3 className="font-semibold text-lg text-white truncate">{book.name}</h3>
+                <h3 className="font-semibold text-lg text-white truncate">{serie.titulo}</h3>
               </div>
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Pencil className="w-8 h-8 text-white" />

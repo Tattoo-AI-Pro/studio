@@ -2,65 +2,63 @@
 import { NextResponse } from 'next/server';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server'; // Using server-side initialization
-import type { AiBook, Module } from '@/lib/types';
-import type { Image as ImageItem } from '@/lib/types';
+import type { Serie, Modulo, Tatuagem } from '@/lib/types';
 
 // IMPORTANT: This function needs to be 'GET' to be a public API route
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const { id: bookId } = params;
+  const { id: serieId } = params;
 
-  if (!bookId) {
-    return NextResponse.json({ error: 'Book ID is required' }, { status: 400 });
+  if (!serieId) {
+    return NextResponse.json({ error: 'Serie ID is required' }, { status: 400 });
   }
 
   try {
     const { firestore } = initializeFirebase();
-    const bookRef = doc(firestore, 'ai_books', bookId);
-    const bookSnap = await getDoc(bookRef);
+    const serieRef = doc(firestore, 'series', serieId);
+    const serieSnap = await getDoc(serieRef);
 
-    if (!bookSnap.exists()) {
-      return NextResponse.json({ error: 'Book not found' }, { status: 404 });
+    if (!serieSnap.exists()) {
+      return NextResponse.json({ error: 'Serie not found' }, { status: 404 });
     }
 
-    const bookData = bookSnap.data() as Omit<AiBook, 'id' | 'modules'>;
+    const serieData = serieSnap.data() as Omit<Serie, 'id' | 'modulos'>;
 
-    // Fetch modules and their images
-    const modulesCollectionRef = collection(firestore, `ai_books/${bookId}/modules`);
-    const modulesSnapshot = await getDocs(modulesCollectionRef);
+    // Fetch modules and their tattoos
+    const modulosCollectionRef = collection(firestore, `series/${serieId}/modulos`);
+    const modulosSnapshot = await getDocs(modulosCollectionRef);
 
-    const modules: Module[] = [];
-    for (const moduleDoc of modulesSnapshot.docs) {
-      const moduleData = moduleDoc.data() as Omit<Module, 'id' | 'images'>;
+    const modulos: Modulo[] = [];
+    for (const moduloDoc of modulosSnapshot.docs) {
+      const moduloData = moduloDoc.data() as Omit<Modulo, 'id' | 'tatuagens'>;
       
-      const imagesCollectionRef = collection(firestore, `ai_books/${bookId}/modules/${moduleDoc.id}/images`);
-      const imagesSnapshot = await getDocs(imagesCollectionRef);
+      const tatuagensCollectionRef = collection(firestore, `series/${serieId}/modulos/${moduloDoc.id}/tatuagens`);
+      const tatuagensSnapshot = await getDocs(tatuagensCollectionRef);
       
-      const images: ImageItem[] = imagesSnapshot.docs.map(imageDoc => ({
-        id: imageDoc.id,
-        ...imageDoc.data(),
-      } as ImageItem));
+      const tatuagens: Tatuagem[] = tatuagensSnapshot.docs.map(tatuagemDoc => ({
+        id: tatuagemDoc.id,
+        ...tatuagemDoc.data(),
+      } as Tatuagem));
 
-      modules.push({
-        id: moduleDoc.id,
-        name: moduleData.name,
-        description: moduleData.description, // Correctly using the description field
-        images: images,
+      modulos.push({
+        ...moduloData,
+        id: moduloDoc.id,
+        tatuagens: tatuagens,
       });
     }
 
-    const fullBook: AiBook = {
-      id: bookSnap.id,
-      ...bookData,
-      modules: modules,
+    const fullSerie: Serie = {
+      id: serieSnap.id,
+      ...serieData,
+      modulos: modulos,
     };
 
-    return NextResponse.json(fullBook);
+    return NextResponse.json(fullSerie);
 
   } catch (error) {
-    console.error(`Error fetching book ${bookId}:`, error);
+    console.error(`Error fetching serie ${serieId}:`, error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

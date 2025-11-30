@@ -16,14 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { ImageItem } from "@/lib/types";
+import type { Tatuagem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
 interface EditImageSheetProps {
-  image: ImageItem | null;
+  image: Tatuagem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (image: ImageItem) => void;
+  onSave: (image: Tatuagem) => void;
 }
 
 export function EditImageSheet({
@@ -32,13 +32,15 @@ export function EditImageSheet({
   onOpenChange,
   onSave,
 }: EditImageSheetProps) {
-  const [formData, setFormData] = useState<Partial<ImageItem>>({});
+  const [formData, setFormData] = useState<Partial<Tatuagem>>({});
   const [tagsInput, setTagsInput] = useState("");
+  const [estilosInput, setEstilosInput] = useState("");
 
   useEffect(() => {
     if (image) {
       setFormData(image);
-      setTagsInput(image.tags.join(", "));
+      setTagsInput((image.tags ?? []).join(", "));
+      setEstilosInput((image.estilos ?? []).join(", "));
     }
   }, [image]);
 
@@ -48,7 +50,8 @@ export function EditImageSheet({
     onSave({
       ...formData,
       tags: tagsInput.split(",").map((tag) => tag.trim()).filter(Boolean),
-    } as ImageItem);
+      estilos: estilosInput.split(",").map((estilo) => estilo.trim()).filter(Boolean),
+    } as Tatuagem);
     onOpenChange(false);
   };
 
@@ -64,60 +67,60 @@ export function EditImageSheet({
       <SheetContent className="sm:max-w-lg w-[90vw] overflow-y-auto">
         <SheetHeader className="text-left">
           <SheetTitle className="font-semibold text-2xl">
-            Edit Image Details
+            Editar Detalhes da Tatuagem
           </SheetTitle>
           <SheetDescription className="font-sans text-base flex items-center gap-2">
             <Bot className="w-4 h-4 text-primary" />
-            <span>AI suggestions are pre-filled. Adjust as needed.</span>
+            <span>Sugestões da IA estão pré-preenchidas. Ajuste conforme necessário.</span>
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-6 py-6">
           <div className="grid gap-3">
-            <Label htmlFor="title" className="font-semibold">Suggested Name</Label>
+            <Label htmlFor="titulo" className="font-semibold">Título</Label>
             <Input
-              id="title"
-              name="title"
-              value={formData.title || ""}
+              id="titulo"
+              name="titulo"
+              value={formData.titulo || ""}
               onChange={handleChange}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-             <div className="grid gap-3">
-              <Label htmlFor="theme" className="font-semibold">Theme</Label>
-              <Input
-                id="theme"
-                name="theme"
-                value={formData.theme || ""}
-                onChange={handleChange}
-              />
-            </div>
-             <div className="grid gap-3">
-              <Label htmlFor="style" className="font-semibold">Style</Label>
-              <Input
-                id="style"
-                name="style"
-                value={formData.style || ""}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
           <div className="grid gap-3">
-            <Label htmlFor="description" className="font-semibold">Description</Label>
+            <Label htmlFor="descricao_contextual" className="font-semibold">Descrição Contextual</Label>
             <Textarea
-              id="description"
-              name="description"
-              value={formData.description || ""}
+              id="descricao_contextual"
+              name="descricao_contextual"
+              value={formData.descricao_contextual || ""}
               onChange={handleChange}
               className="min-h-[100px] font-sans"
             />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+             <div className="grid gap-3">
+              <Label htmlFor="tema" className="font-semibold">Tema</Label>
+              <Input
+                id="tema"
+                name="tema"
+                value={formData.tema || ""}
+                onChange={handleChange}
+              />
+            </div>
+             <div className="grid gap-3">
+              <Label htmlFor="estilos" className="font-semibold">Estilos</Label>
+              <Input
+                id="estilos"
+                value={estilosInput}
+                onChange={(e) => setEstilosInput(e.target.value)}
+                placeholder="e.g. realismo, fine-line"
+              />
+            </div>
+          </div>
           <div className="grid gap-3">
-            <Label htmlFor="tags" className="font-semibold">SEO Tags</Label>
+            <Label htmlFor="tags" className="font-semibold">Tags (SEO)</Label>
             <Input
               id="tags"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g. minimalist, fine-line, floral"
+              placeholder="e.g. minimalista, floral"
             />
             <div className="flex flex-wrap gap-2">
               {tagsInput.split(',').map(tag => tag.trim()).filter(Boolean).map((tag, i) => (
@@ -126,23 +129,23 @@ export function EditImageSheet({
             </div>
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="instagramCaption" className="font-semibold">Instagram Caption</Label>
+            <Label htmlFor="significado_literal" className="font-semibold">Significado Literal</Label>
             <Textarea
-              id="instagramCaption"
-              name="instagramCaption"
-              value={formData.instagramCaption || ""}
+              id="significado_literal"
+              name="significado_literal"
+              value={formData.significado_literal || ""}
               onChange={handleChange}
-              className="min-h-[120px] font-sans"
+              className="min-h-[100px] font-sans"
             />
           </div>
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Cancelar</Button>
           </SheetClose>
           <Button onClick={handleSave}>
             <Save className="mr-2 h-4 w-4" />
-            Save Changes
+            Salvar Alterações
           </Button>
         </SheetFooter>
       </SheetContent>

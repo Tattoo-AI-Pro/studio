@@ -3,10 +3,10 @@
 
 import { useState } from "react";
 import { Sparkles, LoaderCircle } from "lucide-react";
-import { doc } from "firebase/firestore";
+import { doc, serverTimestamp } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
-import type { AiBook, ImageItem, Module } from "@/lib/types";
+import type { Serie, Tatuagem, Modulo } from "@/lib/types";
 import { ModuleSection } from "./module-section";
 import { EditImageSheet } from "./edit-image-sheet";
 import { CompileDialog, type CompilationResult } from "./compile-dialog";
@@ -15,50 +15,57 @@ import { useFirestore, updateDocumentNonBlocking } from "@/firebase";
 import { aiBookCompilation, type AiBookCompilationInput } from "@/ai/flows/ai-book-compilation";
 
 interface EditorTabProps {
-  initialBookState: AiBook;
+  initialBookState: Serie;
 }
 
 export function EditorTab({ initialBookState }: EditorTabProps) {
   const firestore = useFirestore();
-  const [book, setBook] = useState<AiBook>(initialBookState);
-  const [editingImage, setEditingImage] = useState<ImageItem | null>(null);
+  const [book, setBook] = useState<Serie>(initialBookState);
+  const [editingImage, setEditingImage] = useState<Tatuagem | null>(null);
   const [isCompiling, setIsCompiling] = useState(false);
   const [showCompileDialog, setShowCompileDialog] = useState(false);
   const [compilationResult, setCompilationResult] =
     useState<CompilationResult | null>(null);
   const { toast } = useToast();
 
-  const handleImageUpdate = (updatedImage: ImageItem) => {
-    const newModules = book.modules.map((module) => {
-      const imageIndex = module.images.findIndex(
+  const handleImageUpdate = (updatedImage: Tatuagem) => {
+    const newModules = (book.modulos ?? []).map((module) => {
+      if (!module.tatuagens) module.tatuagens = [];
+      const imageIndex = module.tatuagens.findIndex(
         (img) => img.id === updatedImage.id
       );
       if (imageIndex > -1) {
-        const newImages = [...module.images];
+        const newImages = [...module.tatuagens];
         newImages[imageIndex] = updatedImage;
-        return { ...module, images: newImages };
+        return { ...module, tatuagens: newImages };
       }
       return module;
     });
 
-    const updatedBook = { ...book, modules: newModules };
+    const updatedBook = { ...book, modulos: newModules };
     setBook(updatedBook);
 
-    const bookRef = doc(firestore, "ai_books", book.id);
-    updateDocumentNonBlocking(bookRef, { modules: newModules });
+    const bookRef = doc(firestore, "series", book.id);
+    updateDocumentNonBlocking(bookRef, { 
+      modulos: newModules,
+      data_atualizacao: serverTimestamp()
+    });
 
     toast({
-      title: "Imagem salva!",
-      description: `"${updatedImage.title}" foi atualizada com sucesso.`,
+      title: "Tatuagem salva!",
+      description: `"${updatedImage.titulo}" foi atualizada com sucesso.`,
     });
   };
 
-  const handleModulesUpdate = (updatedModules: Module[]) => {
-    const updatedBook = { ...book, modules: updatedModules };
+  const handleModulesUpdate = (updatedModules: Modulo[]) => {
+    const updatedBook = { ...book, modulos: updatedModules };
     setBook(updatedBook);
 
-    const bookRef = doc(firestore, "ai_books", book.id);
-    updateDocumentNonBlocking(bookRef, { modules: updatedModules });
+    const bookRef = doc(firestore, "series", book.id);
+    updateDocumentNonBlocking(bookRef, { 
+      modulos: updatedModules,
+      data_atualizacao: serverTimestamp()
+     });
   };
 
   const handleCompile = async () => {
@@ -68,15 +75,13 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
 
     try {
       const compilationInput: AiBookCompilationInput = {
-        aiBookName: book.name,
-        description: book.longDescription,
-        targetAudience: book.targetAudience,
-        modules: book.modules.map(m => ({
-          name: m.name,
-          subDescription: m.description,
-          // For now, we send image URLs; the flow expects base64 but can handle URLs.
-          // In a future step, we could convert these if needed.
-          images: m.images.map(img => img.sourceUrl),
+        aiBookName: book.titulo,
+        description: book.descricao,
+        targetAudience: book.publico_alvo,
+        modules: (book.modulos ?? []).map(m => ({
+          name: m.titulo,
+          subDescription: m.descricao,
+          images: (m.tatuagens ?? []).map(img => img.capa_url),
         }))
       };
 
@@ -90,7 +95,6 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
             title: "Erro na Compilação",
             description: "A IA não conseguiu compilar a coleção. Tente novamente.",
         });
-        // Close the dialog on error
         setShowCompileDialog(false);
     } finally {
         setIsCompiling(false);
@@ -113,20 +117,20 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
         </div>
 
         <div className="space-y-12">
-          {book.modules.map((module, moduleIndex) => (
+          {(book.modulos ?? []).map((module, moduleIndex) => (
             <ModuleSection
               key={module.id}
               module={module}
               onEditImage={setEditingImage}
               onImagesChange={(newImages) => {
-                const newModules = [...book.modules];
-                newModules[moduleIndex].images = newImages;
+                const newModules = [...(book.modulos ?? [])];
+                newModules[moduleIndex].tatuagens = newImages;
                 handleModulesUpdate(newModules);
               }}
               bookId={book.id}
             />
           ))}
-          {book.modules.length === 0 && (
+          {(!book.modulos || book.modulos.length === 0) && (
             <div className="text-center py-12 border border-dashed rounded-lg">
               <p className="text-muted-foreground">
                 Esta coleção ainda não possui módulos ou imagens.
@@ -153,7 +157,7 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
         onOpenChange={setShowCompileDialog}
         isCompiling={isCompiling}
         compilationResult={compilationResult}
-        bookName={book.name}
+        bookName={book.titulo}
       />
     </>
   );

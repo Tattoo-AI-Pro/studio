@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -27,179 +28,129 @@
       },
       "required": ["id", "email"]
     },
-    "AiBook": {
+    "Serie": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AiBook",
+      "title": "Série",
       "type": "object",
-      "description": "Represents an AI-Book, a collection of tattoo designs organized and optimized by AI.",
+      "description": "Representa uma Série (Coleção ou AI-Book), que é o produto-mãe.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the AI-Book."
-        },
-        "ownerId": {
-          "type": "string",
-          "description": "The UID of the user who owns this AI-Book."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the AI-Book."
-        },
-        "shortDescription": {
-          "type": "string",
-          "description": "A brief description of the AI-Book."
-        },
-        "longDescription": {
-          "type": "string",
-          "description": "A detailed description of the AI-Book."
-        },
-        "theme": {
-          "type": "string",
-          "description": "The main theme of the AI-Book (e.g., 'Floral', 'Geometric')."
-        },
-        "targetAudience": {
-          "type": "string",
-          "description": "The target audience for the AI-Book (e.g., 'Beginner Tattoo Artists', 'Women Seeking Small Tattoos')."
-        },
-        "tags": {
-          "type": "array",
-          "description": "Tags for internal SEO purposes.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "coverImage": {
-          "type": "string",
-          "description": "URL or path to the cover image of the AI-Book."
-        },
-        "price": {
-          "type": "number",
-          "description": "The price of the AI-Book."
-        },
-        "promotionalPrice": {
-          "type": "number",
-          "description": "The promotional price of the AI-Book, if applicable."
-        },
-        "salesLink": {
-          "type": "string",
-          "description": "Link to the sales page for the AI-Book."
-        }
+        "id": { "type": "string" },
+        "capa_url": { "type": "string", "format": "uri" },
+        "titulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "publico_alvo": { "type": "string" },
+        "preco": { "type": "number" },
+        "status": { "type": "string", "enum": ["rascunho", "publicada", "pausada"] },
+        "data_criacao": { "type": "string", "format": "date-time" },
+        "data_atualizacao": { "type": "string", "format": "date-time" },
+        "autor_id": { "type": "string" },
+        "tags_gerais": { "type": "array", "items": { "type": "string" } },
+        "modulos_count": { "type": "integer" },
+        "tatuagens_count": { "type": "integer" }
       },
-      "required": [
-        "id",
-        "ownerId",
-        "name",
-        "shortDescription",
-        "theme",
-        "targetAudience"
-      ]
+      "required": ["titulo", "status", "autor_id"]
     },
-    "Module": {
+    "Modulo": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Module",
+      "title": "Módulo",
       "type": "object",
-      "description": "Represents a module within an AI-Book, containing a set of tattoo images.",
+      "description": "Representa um módulo ou categoria dentro de uma Série.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Module."
-        },
-        "aiBookId": {
-          "type": "string",
-          "description": "Reference to AiBook. (Relationship: AiBook 1:N Module)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the module."
-        },
-        "subDescription": {
-          "type": "string",
-          "description": "A brief description of the module."
-        },
-        "estimatedImages": {
-          "type": "number",
-          "description": "The estimated number of images in the module."
-        }
+        "id": { "type": "string" },
+        "titulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "ordem": { "type": "number" },
+        "data_criacao": { "type": "string", "format": "date-time" },
+        "data_atualizacao": { "type": "string", "format": "date-time" },
+        "tatuagens_count": { "type": "integer" }
       },
-      "required": [
-        "id",
-        "aiBookId",
-        "name"
-      ]
+      "required": ["titulo", "ordem"]
     },
-    "Image": {
+    "Tatuagem": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Image",
+      "title": "Tatuagem",
       "type": "object",
-      "description": "Represents a tattoo image within a module.",
+      "description": "Representa uma tatuagem individual, o coração do AI-Book.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Image."
-        },
-        "moduleId": {
-          "type": "string",
-          "description": "Reference to Module. (Relationship: Module 1:N Image)"
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the image, suggested by AI."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the image, generated by AI."
-        },
-        "categories": {
-          "type": "array",
-          "description": "Categories the image belongs to (e.g., 'Realism', 'Fineline').",
-          "items": {
-            "type": "string"
-          }
-        },
-        "keywords": {
-          "type": "array",
-          "description": "Keywords associated with the image for search and SEO.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "copyMacro": {
-          "type": "string",
-          "description": "A 'copy macro' for selling the image/design."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL or path to the tattoo image."
-        }
+        "id": { "type": "string" },
+        "capa_url": { "type": "string", "format": "uri" },
+        "titulo": { "type": "string" },
+        "descricao_contextual": { "type": "string" },
+        "tema": { "type": "string" },
+        "estilos": { "type": "array", "items": { "type": "string" } },
+        "significado_literal": { "type": "string" },
+        "significado_subjetivo": { "type": "string" },
+        "cores_usadas": { "type": "array", "items": { "type": "string" } },
+        "elementos_presentes": { "type": "array", "items": { "type": "string" } },
+        "tom_emocional": { "type": "string" },
+        "local_sugerido": { "type": "string" },
+        "simbolismo": { "type": "string" },
+        "referencia_cultural": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "likes": { "type": "integer" },
+        "comentarios_count": { "type": "integer" },
+        "compartilhamentos": { "type": "integer" },
+        "data_criacao": { "type": "string", "format": "date-time" },
+        "data_atualizacao": { "type": "string", "format": "date-time" },
+        "autor_id": { "type": "string" },
+        "origem": { "type": "string", "enum": ["manual", "IA"] }
       },
-      "required": [
-        "id",
-        "moduleId",
-        "imageUrl"
-      ]
+      "required": ["capa_url", "titulo", "autor_id", "origem"]
+    },
+    "Like": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Like",
+      "type": "object",
+      "description": "Representa a curtida de um usuário em uma tatuagem.",
+      "properties": {
+        "userId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "timestamp"]
+    },
+    "Comentario": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Comentário",
+      "type": "object",
+      "description": "Representa um comentário de um usuário em uma tatuagem.",
+      "properties": {
+        "id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "texto": { "type": "string" },
+        "data_criacao": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "texto", "data_criacao"]
     }
   },
   "auth": {
-    "providers": [
-      "google.com"
-    ]
+    "providers": ["google.com"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
       "description": "Stores public user profile information."
     },
-    "/ai_books/{aiBookId}": {
-      "schema": { "$ref": "#/entities/AiBook" },
-      "description": "Top-level collection for AI-Book metadata.",
+    "/series/{serieId}": {
+      "schema": { "$ref": "#/entities/Serie" },
+      "description": "Coleção principal para as Séries (AI-Books).",
       "subcollections": {
-        "/modules/{moduleId}": {
-          "schema": { "$ref": "#/entities/Module" },
-          "description": "Subcollection for modules within an AI-Book.",
+        "/modulos/{moduloId}": {
+          "schema": { "$ref": "#/entities/Modulo" },
+          "description": "Subcoleção para os módulos dentro de uma Série.",
           "subcollections": {
-            "/images/{imageId}": {
-              "schema": { "$ref": "#/entities/Image" },
-              "description": "Subcollection for images within a module."
+            "/tatuagens/{tatuagemId}": {
+              "schema": { "$ref": "#/entities/Tatuagem" },
+              "description": "Subcoleção para as tatuagens dentro de um módulo.",
+              "subcollections": {
+                "/likes/{userId}": {
+                  "schema": { "$ref": "#/entities/Like" },
+                  "description": "Usuários que curtiram a tatuagem."
+                },
+                "/comentarios/{commentId}": {
+                  "schema": { "$ref": "#/entities/Comentario" },
+                  "description": "Comentários na tatuagem."
+                }
+              }
             }
           }
         }

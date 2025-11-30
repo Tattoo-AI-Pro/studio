@@ -1,107 +1,72 @@
-/**
- * This ruleset enforces an ownership-based security model for a catalog of AI-generated tattoo designs (AI-Books).
- *
- * Core Philosophy:
- * - Users must be authenticated to create, update, or delete content.
- * - Users can only modify content that they own. Ownership is determined by an `ownerId` field on documents.
- * - Public content can be read by anyone, authenticated or not.
- *
- * Data Structure:
- * The data is organized hierarchically:
- * - /users/{userId}: Stores public user profile data.
- * - /ai_books/{aiBookId}: Top-level collection for AI-Book metadata, owned by a user.
- *   - /modules/{moduleId}: Subcollection for modules within an AI-Book.
- *     - /images/{imageId}: Subcollection for images within a module.
- *
- * Key Security Decisions:
- * - User Profiles (/users): Users can only create and update their own profile document. Profiles are publicly readable.
- * - AI-Books (/ai_books):
- *   - Read: All AI-Books are publicly readable to support catalog browsing.
- *   - Create: Only authenticated users can create AI-Books, and they must set themselves as the owner.
- *   - Update/Delete: Only the user whose UID matches the `ownerId` of the document can update or delete it.
- * - Subcollections (modules, images): Writes to these subcollections are implicitly protected by the parent AI-Book's
- *   ownership rules. We check the ownership of the parent `ai_book` document before allowing writes. This prevents
- *   unauthorized modifications to the content of an AI-Book.
- *
- */
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // ------------------------------------------------------------------------
     // Helper Functions
     // ------------------------------------------------------------------------
-
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the requesting user is the owner of a given resource.
-     * @param resource The resource document, which must have an `ownerId` field.
-     */
     function isOwner(resource) {
-      return request.auth.uid == resource.data.ownerId;
+      return request.auth.uid == resource.data.autor_id;
+    }
+    
+    function isRequestingUser(userId) {
+      return request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the incoming data for a create/update operation correctly assigns ownership.
-     */
     function requestAssignsOwner() {
-        return request.resource.data.ownerId == request.auth.uid;
+      return request.resource.data.autor_id == request.auth.uid;
+    }
+
+    function getSerie(serieId) {
+      return get(/databases/$(database)/documents/series/$(serieId));
+    }
+
+    function isSerieOwner(serieId) {
+      return isOwner(getSerie(serieId));
     }
 
     // ------------------------------------------------------------------------
     // Collection Rules
     // ------------------------------------------------------------------------
 
-    /**
-     * @description User profile data.
-     * @path /users/{userId}
-     * @allow (get) Any user can read a user's profile.
-     * @allow (create, update) A user can only create or update their own profile.
-     */
     match /users/{userId} {
       allow get: if true;
-      allow create, update: if request.auth.uid == userId;
-      allow delete: if false; // Generally, don't allow users to delete their profiles directly.
+      allow create, update: if isRequestingUser(userId);
+      allow delete: if false; 
     }
 
-
-    /**
-     * @description AI-Book catalog.
-     * @path /ai_books/{aiBookId}
-     * @allow (get, list) Any user, authenticated or anonymous, can read AI-Book documents.
-     * @allow (create) Authenticated user can create a new AI-Book, assigning themselves as owner.
-     * @allow (update, delete) Only the owner of the AI-Book can update or delete it.
-     */
-    match /ai_books/{aiBookId} {
-      allow get, list: if true;
+    match /series/{serieId} {
+      allow read: if true;
       allow create: if isSignedIn() && requestAssignsOwner();
       allow update, delete: if isSignedIn() && isOwner(resource);
 
-      /**
-       * @description Modules within an AI-Book.
-       * @path /ai_books/{aiBookId}/modules/{moduleId}
-       * @allow (get, list) Publicly readable.
-       * @allow (create, update, delete) Only the owner of the parent AI-Book can modify its modules.
-       */
-      match /modules/{moduleId} {
-        allow get, list: if true;
-        allow create, update, delete: if isSignedIn() && isOwner(get(/databases/$(database)/documents/ai_books/$(aiBookId)));
+      match /modulos/{moduloId} {
+        allow read: if true;
+        allow create, update, delete: if isSignedIn() && isSerieOwner(serieId);
 
-        /**
-         * @description Images within a module.
-         * @path /ai_books/{aiBookId}/modules/{moduleId}/images/{imageId}
-         * @allow (get, list) Publicly readable.
-         * @allow (create, update, delete) Only the owner of the parent AI-Book can modify its images.
-         */
-        match /images/{imageId} {
-          allow get, list: if true;
-          allow create, update, delete: if isSignedIn() && isOwner(get(/databases/$(database)/documents/ai_books/$(aiBookId)));
+        match /tatuagens/{tatuagemId} {
+          allow read: if true;
+          allow create, update, delete: if isSignedIn() && isSerieOwner(serieId);
+
+          match /likes/{userId} {
+            allow read: if true;
+            allow create: if isSignedIn() && isRequestingUser(userId);
+            allow delete: if isSignedIn() && isRequestingUser(userId);
+            allow update: if false;
+          }
+
+          match /comentarios/{commentId} {
+            allow read: if true;
+            allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+            allow update: if isSignedIn() && isOwner(resource);
+            allow delete: if isSignedIn() && isOwner(resource);
+          }
         }
       }
     }
