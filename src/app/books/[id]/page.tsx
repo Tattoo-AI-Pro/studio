@@ -21,7 +21,7 @@ export default function BookEditorPage({ params }: { params: { id: string } }) {
           >
             <Book className="h-6 w-6 text-primary" />
             <span className="font-headline text-2xl tracking-wide">
-              Tattoo AI-Book Factory
+              Tattoo Art Factory
             </span>
           </Link>
         </nav>
@@ -34,7 +34,7 @@ export default function BookEditorPage({ params }: { params: { id: string } }) {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
                 <div className="text-center sm:text-left">
                   <p className="text-sm text-muted-foreground font-body">
-                    AI-Book
+                    Coleção
                   </p>
                   <h1 className="font-headline text-3xl">{book.name}</h1>
                 </div>
@@ -45,7 +45,7 @@ export default function BookEditorPage({ params }: { params: { id: string } }) {
                   </TabsTrigger>
                   <TabsTrigger value="sales">
                     <ShoppingCart className="w-4 h-4 mr-2" />
-                    Sales
+                    Vendas
                   </TabsTrigger>
                 </TabsList>
               </div>

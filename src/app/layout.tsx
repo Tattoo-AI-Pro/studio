@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Tattoo AI-Book Factory',
-  description: 'Create, organize, compile, and sell tattoo collections with AI.',
+  title: 'Tattoo Art Factory',
+  description: 'Crie, organize, compile e venda coleções de tatuagens com IA.',
 };
 
 export default function RootLayout({
