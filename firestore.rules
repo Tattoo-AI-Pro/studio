@@ -1,32 +1,28 @@
 /**
- * This ruleset enforces a public, read-only security model for a catalog of AI-generated tattoo designs (AI-Books).
- * The primary goal is to allow public browsing of all content while restricting all write operations until a proper
- * ownership model is defined in the data schema.
+ * This ruleset enforces an ownership-based security model for a catalog of AI-generated tattoo designs (AI-Books).
  *
  * Core Philosophy:
- * Data is treated as a public catalog. Anyone, authenticated or not, can read any document. All client-side
- * write operations (create, update, delete) are explicitly disabled. This is a secure-by-default posture chosen
- * because the data entities (AiBook, Module, Image) lack an 'ownerId' or 'authorId' field, making it impossible
- * to safely authorize write operations.
+ * - Users must be authenticated to create, update, or delete content.
+ * - Users can only modify content that they own. Ownership is determined by an `ownerId` field on documents.
+ * - Public content can be read by anyone, authenticated or not.
  *
  * Data Structure:
- * The data is organized hierarchically to represent the catalog structure:
- * - /ai_books/{aiBookId}: Top-level collection for AI-Book metadata.
+ * The data is organized hierarchically:
+ * - /users/{userId}: Stores public user profile data.
+ * - /ai_books/{aiBookId}: Top-level collection for AI-Book metadata, owned by a user.
  *   - /modules/{moduleId}: Subcollection for modules within an AI-Book.
  *     - /images/{imageId}: Subcollection for images within a module.
  *
  * Key Security Decisions:
- * - Public Read Access: All collections and subcollections are publicly readable (`get`, `list`) to support the catalog browsing feature.
- * - All Writes Denied: All `create`, `update`, and `delete` operations are denied (`if false`). This is a critical security measure
- *   to prevent unauthorized data modification. Rules are marked with a `TODO` to prompt developers to add owner-based
- *   authorization once the data schema is updated with an ownership field.
- * - No User Listing: There are no user-specific collections, so user privacy concerns related to listing are not applicable.
+ * - User Profiles (/users): Users can only create and update their own profile document. Profiles are publicly readable.
+ * - AI-Books (/ai_books):
+ *   - Read: All AI-Books are publicly readable to support catalog browsing.
+ *   - Create: Only authenticated users can create AI-Books, and they must set themselves as the owner.
+ *   - Update/Delete: Only the user whose UID matches the `ownerId` of the document can update or delete it.
+ * - Subcollections (modules, images): Writes to these subcollections are implicitly protected by the parent AI-Book's
+ *   ownership rules. We check the ownership of the parent `ai_book` document before allowing writes. This prevents
+ *   unauthorized modifications to the content of an AI-Book.
  *
- * Denormalization for Authorization:
- * The current model is simple and does not require denormalization as writes are disallowed. For future implementation
- * of write access, it is strongly recommended to denormalize an `ownerId` field onto the `AiBook` documents.
- * This would allow for simple and performant rules like `allow update: if isOwner(resource.data.ownerId);` without
- * needing costly `get()` calls to other documents.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -43,52 +39,69 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    /**
+     * Checks if the requesting user is the owner of a given resource.
+     * @param resource The resource document, which must have an `ownerId` field.
+     */
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.ownerId;
+    }
+
+    /**
+     * Checks if the incoming data for a create/update operation correctly assigns ownership.
+     */
+    function requestAssignsOwner() {
+        return request.resource.data.ownerId == request.auth.uid;
+    }
+
     // ------------------------------------------------------------------------
     // Collection Rules
     // ------------------------------------------------------------------------
 
     /**
-     * @description Provides public, read-only access to the AI-Book catalog.
+     * @description User profile data.
+     * @path /users/{userId}
+     * @allow (get) Any user can read a user's profile.
+     * @allow (create, update) A user can only create or update their own profile.
+     */
+    match /users/{userId} {
+      allow get: if true;
+      allow create, update: if request.auth.uid == userId;
+      allow delete: if false; // Generally, don't allow users to delete their profiles directly.
+    }
+
+
+    /**
+     * @description AI-Book catalog.
      * @path /ai_books/{aiBookId}
-     * @allow (get) Any user, authenticated or anonymous, can read an AI-Book document.
-     * @deny (create) An authenticated user attempts to create a new AI-Book.
-     * @principle Public read-only access. Writes are disabled until a secure ownership model is implemented in the schema.
+     * @allow (get, list) Any user, authenticated or anonymous, can read AI-Book documents.
+     * @allow (create) Authenticated user can create a new AI-Book, assigning themselves as owner.
+     * @allow (update, delete) Only the owner of the AI-Book can update or delete it.
      */
     match /ai_books/{aiBookId} {
-      allow get: if true;
-      allow list: if true;
-      // CRITICAL: Cannot implement owner-only writes. The 'AiBook' entity is missing an 'ownerId' or 'authorId' field.
-      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get, list: if true;
+      allow create: if isSignedIn() && requestAssignsOwner();
+      allow update, delete: if isSignedIn() && isOwner(resource);
 
       /**
-       * @description Provides public, read-only access to AI-Book modules.
+       * @description Modules within an AI-Book.
        * @path /ai_books/{aiBookId}/modules/{moduleId}
-       * @allow (get) Any user, authenticated or anonymous, can read a module document.
-       * @deny (update) An authenticated user attempts to update a module's name.
-       * @principle Inherits the read-only principle from its parent collection to maintain a consistent security posture.
+       * @allow (get, list) Publicly readable.
+       * @allow (create, update, delete) Only the owner of the parent AI-Book can modify its modules.
        */
       match /modules/{moduleId} {
-        allow get: if true;
-        allow list: if true;
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
+        allow get, list: if true;
+        allow create, update, delete: if isSignedIn() && isOwner(get(/databases/$(database)/documents/ai_books/$(aiBookId)));
 
         /**
-         * @description Provides public, read-only access to module images.
+         * @description Images within a module.
          * @path /ai_books/{aiBookId}/modules/{moduleId}/images/{imageId}
-         * @allow (list) Any user, authenticated or anonymous, can list all images within a module.
-         * @deny (delete) An authenticated user attempts to delete an image.
-         * @principle Inherits the read-only principle from its parent collection to maintain a consistent security posture.
+         * @allow (get, list) Publicly readable.
+         * @allow (create, update, delete) Only the owner of the parent AI-Book can modify its images.
          */
         match /images/{imageId} {
-          allow get: if true;
-          allow list: if true;
-          allow create: if false;
-          allow update: if false;
-          allow delete: if false;
+          allow get, list: if true;
+          allow create, update, delete: if isSignedIn() && isOwner(get(/databases/$(database)/documents/ai_books/$(aiBookId)));
         }
       }
     }

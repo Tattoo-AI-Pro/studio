@@ -18,6 +18,7 @@ export interface Module {
 
 export interface AiBook {
   id: string;
+  ownerId: string;
   name: string;
   shortDescription: string;
   longDescription: string;

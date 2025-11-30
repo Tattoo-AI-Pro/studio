@@ -1,3 +1,5 @@
+"use client";
+
 import { Book, Palette, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
@@ -6,6 +8,7 @@ import { placeholderBook } from "@/lib/placeholder-data";
 import type { AiBook } from "@/lib/types";
 import { EditorTab } from "@/components/editor/editor-tab";
 import { SalesTab } from "@/components/sales/sales-tab";
+import { AuthButton } from "@/components/auth-button";
 
 export default function BookEditorPage({ params }: { params: { id: string } }) {
   // In a real app, you'd fetch the book by params.id
@@ -14,18 +17,20 @@ export default function BookEditorPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card/80 backdrop-blur-sm px-4 md:px-6 z-20">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
+        <nav className="flex-1">
           <Link
             href="/"
             className="flex items-center gap-2 text-lg font-semibold md:text-base text-foreground/80 hover:text-foreground transition-colors"
           >
             <Book className="h-6 w-6 text-primary" />
             <span className="font-headline text-2xl tracking-wide">
-              Tattoo Art Factory
+              Estúdio de Tatuagem
             </span>
           </Link>
         </nav>
-        {/* Can have book specific actions here in a real app */}
+        <div className="ml-auto">
+          <AuthButton />
+        </div>
       </header>
       <main className="flex flex-1 flex-col">
         <Tabs defaultValue="editor" className="flex-1">

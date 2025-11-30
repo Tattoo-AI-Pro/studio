@@ -5,6 +5,7 @@ const findImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.
 
 export const placeholderBook: AiBook = {
   id: '1',
+  ownerId: 'placeholder-owner',
   name: 'AI-BOOK: Tatuagens Místicas + Significados',
   shortDescription: 'Uma coleção de tatuagens místicas com seus significados profundos, gerada por IA.',
   longDescription: 'Explore um universo de símbolos e significados com esta coleção exclusiva. Cada tatuagem foi analisada e descrita por nossa IA para oferecer inspiração e conhecimento. Perfeito para quem busca uma tatuagem com alma e história.',

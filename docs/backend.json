@@ -1,5 +1,32 @@
 {
   "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user (matches Firebase Auth UID)."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        }
+      },
+      "required": ["id", "email"]
+    },
     "AiBook": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "AiBook",
@@ -9,6 +36,10 @@
         "id": {
           "type": "string",
           "description": "Unique identifier for the AI-Book."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "The UID of the user who owns this AI-Book."
         },
         "name": {
           "type": "string",
@@ -56,6 +87,7 @@
       },
       "required": [
         "id",
+        "ownerId",
         "name",
         "shortDescription",
         "theme",
@@ -149,12 +181,27 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {
     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores public user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user (matches Firebase Auth UID)."
+            }
+          ]
+        }
+      },
       {
         "path": "/ai_books/{aiBookId}",
         "definition": {
