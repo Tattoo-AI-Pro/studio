@@ -44,15 +44,24 @@ export function CompileDialog({
   };
 
   const renderLoading = () => (
-    <div className="flex flex-col items-center justify-center gap-4 py-12">
-      <LoaderCircle className="w-12 h-12 text-primary animate-spin" />
-      <h3 className="font-headline text-2xl">Compiling your AI-Book...</h3>
-      <p className="font-body text-muted-foreground text-center">
-        The AI is working its magic: generating PDFs, cover art, and more.
-        <br />
-        This may take a moment.
-      </p>
-    </div>
+    <>
+      <DialogHeader>
+        <DialogTitle className="sr-only">Compiling AI-Book</DialogTitle>
+        <DialogDescription asChild>
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <LoaderCircle className="w-12 h-12 text-primary animate-spin" />
+            <h3 className="font-headline text-2xl">
+              Compiling your AI-Book...
+            </h3>
+            <p className="font-body text-muted-foreground text-center">
+              The AI is working its magic: generating PDFs, cover art, and more.
+              <br />
+              This may take a moment.
+            </p>
+          </div>
+        </DialogDescription>
+      </DialogHeader>
+    </>
   );
 
   const renderResults = () => (
