@@ -1,0 +1,130 @@
+import type { AiBook } from './types';
+import { PlaceHolderImages } from './placeholder-images';
+
+const findImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl ?? '';
+
+export const placeholderBook: AiBook = {
+  id: '1',
+  name: 'AI-BOOK: Tatuagens Místicas + Significados',
+  shortDescription: 'Uma coleção de tatuagens místicas com seus significados profundos, gerada por IA.',
+  longDescription: 'Explore um universo de símbolos e significados com esta coleção exclusiva. Cada tatuagem foi analisada e descrita por nossa IA para oferecer inspiração e conhecimento. Perfeito para quem busca uma tatuagem com alma e história.',
+  theme: 'Místico',
+  targetAudience: 'Pessoas interessadas em espiritualidade, simbologia e tatuagens com significado.',
+  tags: ['místico', 'espiritual', 'símbolos', 'significado', '2026'],
+  coverArtUrl: findImage('cover-art-1'),
+  price: 99.90,
+  promoPrice: 49.90,
+  modules: [
+    {
+      id: 'module-1',
+      name: 'Módulo 1: Mini Tattoos Místicas',
+      description: 'Símbolos poderosos em formatos delicados e minimalistas.',
+      images: [
+        {
+          id: 'img-1',
+          sourceUrl: findImage('tattoo-1'),
+          aiTitle: 'Voo da Liberdade',
+          aiDescription: 'Um avião de papel simbolizando a liberdade, a jornada e a leveza da alma. Ideal para pulsos e tornozelos.',
+          aiTheme: 'Minimalista',
+          aiStyle: 'Fine-line',
+          aiSeoTags: ['minimalista', 'fine-line', 'avião de papel', 'liberdade'],
+          aiInstagramCaption: 'Deixe sua alma voar. ✈️ #minitattoo #fineline #tattooinspiration',
+        },
+        {
+          id: 'img-4',
+          sourceUrl: findImage('tattoo-4'),
+          aiTitle: 'Poeira Estelar',
+          aiDescription: 'Uma constelação delicada que representa a conexão com o cosmos e o universo interior.',
+          aiTheme: 'Celestial',
+          aiStyle: 'Fine-line',
+          aiSeoTags: ['constelação', 'celestial', 'espaço', 'minimalista'],
+          aiInstagramCaption: 'Escrito nas estrelas. ✨ #celestialtattoo #constellation #startattoo',
+        },
+        {
+          id: 'img-10',
+          sourceUrl: findImage('tattoo-10'),
+          aiTitle: 'Luz Interior',
+          aiDescription: 'Um pequeno sol que representa a energia vital, a luz interior e o otimismo.',
+          aiTheme: 'Celestial',
+          aiStyle: 'Minimalista',
+          aiSeoTags: ['sol', 'minimalista', 'energia'],
+          aiInstagramCaption: 'Seja sua própria luz. ☀️ #suntattoo #tinytattoo #minimalist',
+        },
+      ],
+    },
+    {
+      id: 'module-2',
+      name: 'Módulo 2: Realismo Mágico Feminino',
+      description: 'Retratos femininos que mesclam o realismo com elementos surreais e mágicos.',
+      images: [
+        {
+          id: 'img-2',
+          sourceUrl: findImage('tattoo-2'),
+          aiTitle: 'Florescer da Alma',
+          aiDescription: 'Um braço adornado com flores realistas, simbolizando o florescimento pessoal e a beleza da natureza.',
+          aiTheme: 'Floral',
+          aiStyle: 'Realismo',
+          aiSeoTags: ['floral', 'realismo', 'flores', 'feminina'],
+          aiInstagramCaption: 'Floresça onde estiver plantada. 🌺 #floraltattoo #realism #tattooforgirls',
+        },
+        {
+          id: 'img-5',
+          sourceUrl: findImage('tattoo-5'),
+          aiTitle: 'Olhar da Deusa',
+          aiDescription: 'Um retrato feminino hiper-realista que captura a força e a serenidade do arquétipo da deusa.',
+          aiTheme: 'Retrato',
+          aiStyle: 'Realismo',
+          aiSeoTags: ['retrato', 'realismo', 'deusa', 'feminina'],
+          aiInstagramCaption: 'O poder de um olhar. #portraittattoo #realismtattoo #goddess',
+        },
+        {
+          id: 'img-9',
+          sourceUrl: findImage('tattoo-9'),
+          aiTitle: 'Jardim Secreto',
+          aiDescription: 'Um arranjo floral delicado para ombros e clavículas, criando uma moldura natural e elegante para o corpo.',
+          aiTheme: 'Floral',
+          aiStyle: 'Fine-line',
+          aiSeoTags: ['floral', 'ombro', 'clavícula', 'delicada'],
+          aiInstagramCaption: 'Seu corpo é um jardim. 🌸 #shouldertattoo #floraltattoo #delicatetattoo',
+        },
+      ],
+    },
+    {
+        id: 'module-3',
+        name: 'Módulo 3: Símbolos de Poder',
+        description: 'Animais e objetos que carregam forte simbologia e poder ancestral.',
+        images: [
+            {
+                id: 'img-3',
+                sourceUrl: findImage('tattoo-3'),
+                aiTitle: 'Lobo Geométrico',
+                aiDescription: 'A força e a inteligência do lobo representadas em traços geométricos precisos, unindo natureza e ordem.',
+                aiTheme: 'Animal',
+                aiStyle: 'Geométrico',
+                aiSeoTags: ['lobo', 'geométrico', 'animal', 'força'],
+                aiInstagramCaption: 'Instinto e precisão. #wolftattoo #geometrictattoo #animaltattoo',
+            },
+            {
+                id: 'img-7',
+                sourceUrl: findImage('tattoo-7'),
+                aiTitle: 'Serpente e Adaga',
+                aiDescription: 'Um design tradicional que simboliza a dualidade da vida e da morte, cura e veneno. Um clássico cheio de poder.',
+                aiTheme: 'Simbólico',
+                aiStyle: 'Tradicional',
+                aiSeoTags: ['tradicional', 'serpente', 'adaga', 'dualidade'],
+                aiInstagramCaption: 'Equilíbrio e poder. 🐍🗡️ #traditionaltattoo #snaketattoo #daggertattoo',
+            },
+            {
+                id: 'img-8',
+                sourceUrl: findImage('tattoo-8'),
+                aiTitle: 'Mãos do Oráculo',
+                aiDescription: 'Mãos adornadas com símbolos místicos, representando a vidência, o destino e a magia.',
+                aiTheme: 'Místico',
+                aiStyle: 'Blackwork',
+                aiSeoTags: ['místico', 'mão', 'oráculo', 'magia'],
+                aiInstagramCaption: 'O futuro em suas mãos. #mystictattoo #handtattoo #magick',
+            }
+        ]
+    }
+  ],
+};
