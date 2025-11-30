@@ -1,6 +1,6 @@
 
 "use client";
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import { Book, Palette, ShoppingCart, ArrowLeft, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,13 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
     }, [firestore, bookId]);
 
     const { data: book, isLoading } = useDoc<Serie>(bookRef);
+    const [bookTitle, setBookTitle] = useState(book?.titulo || "");
+
+    useEffect(() => {
+        if (book) {
+            setBookTitle(book.titulo);
+        }
+    }, [book]);
 
     if (isLoading) {
         return (
@@ -102,7 +109,7 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
                         <p className="text-sm text-muted-foreground font-sans">
                             Série
                         </p>
-                        <h1 className="font-semibold text-3xl">{book.titulo}</h1>
+                        <h1 className="font-semibold text-3xl">{bookTitle}</h1>
                     </div>
                     <TabsList className="grid w-full max-w-xs grid-cols-2">
                     <TabsTrigger value="editor">
@@ -131,3 +138,5 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
         </div>
     );
 }
+
+    

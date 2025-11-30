@@ -14,6 +14,7 @@ import { EditModuleDialog } from "./edit-module-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, updateDocumentNonBlocking } from "@/firebase";
 import { aiBookCompilation, type AiBookCompilationInput } from "@/ai/flows/ai-book-compilation";
+import { SerieSettingsCard } from "./serie-settings-card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -194,8 +195,8 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
   };
   
   const sortedModules = (book.modulos ?? []).sort((a, b) => {
-    const dateA = a.data_criacao?.toDate?.() ?? 0;
-    const dateB = b.data_criacao?.toDate?.() ?? 0;
+    const dateA = a.data_criacao?.toDate?.() ?? new Date(0);
+    const dateB = b.data_criacao?.toDate?.() ?? new Date(0);
     if(dateA < dateB) return -1;
     if(dateA > dateB) return 1;
     return 0;
@@ -204,8 +205,10 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
   return (
     <>
       <div className="space-y-8">
+        <SerieSettingsCard book={book} onBookUpdate={setBook} />
+        
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <h2 className="font-semibold text-2xl">Editor Visual</h2>
+          <h2 className="font-semibold text-2xl">Editor de Módulos</h2>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setCreateModuleOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -302,3 +305,5 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
     </>
   );
 }
+
+    
