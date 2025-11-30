@@ -6,7 +6,7 @@ import { Sparkles, LoaderCircle } from "lucide-react";
 import { doc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
-import type { AiBook, ImageItem } from "@/lib/types";
+import type { AiBook, ImageItem, Module } from "@/lib/types";
 import { ModuleSection } from "./module-section";
 import { EditImageSheet } from "./edit-image-sheet";
 import { CompileDialog } from "./compile-dialog";
@@ -50,6 +50,14 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
     });
   };
 
+  const handleModulesUpdate = (updatedModules: Module[]) => {
+    const updatedBook = { ...book, modules: updatedModules };
+    setBook(updatedBook);
+
+    const bookRef = doc(firestore, "ai_books", book.id);
+    updateDocumentNonBlocking(bookRef, { modules: updatedModules });
+  }
+
   const handleCompile = () => {
     setIsCompiling(true);
     setShowCompileDialog(true);
@@ -76,11 +84,17 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
         </div>
 
         <div className="space-y-12">
-          {book.modules.map((module) => (
+          {book.modules.map((module, moduleIndex) => (
             <ModuleSection
               key={module.id}
               module={module}
               onEditImage={setEditingImage}
+              onImagesChange={(newImages) => {
+                const newModules = [...book.modules];
+                newModules[moduleIndex].images = newImages;
+                handleModulesUpdate(newModules);
+              }}
+              bookId={book.id}
             />
           ))}
           {book.modules.length === 0 && (
