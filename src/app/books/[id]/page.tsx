@@ -51,6 +51,8 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
     const bookWithDefaults = {
         ...book,
         modules: book.modules ?? [],
+        price: book.price ?? 0,
+        promoPrice: book.promoPrice ?? 0,
     }
 
     return (
