@@ -185,84 +185,25 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores public user profile information.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user (matches Firebase Auth UID)."
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores public user profile information."
+    },
+    "/ai_books/{aiBookId}": {
+      "schema": { "$ref": "#/entities/AiBook" },
+      "description": "Top-level collection for AI-Book metadata.",
+      "subcollections": {
+        "/modules/{moduleId}": {
+          "schema": { "$ref": "#/entities/Module" },
+          "description": "Subcollection for modules within an AI-Book.",
+          "subcollections": {
+            "/images/{imageId}": {
+              "schema": { "$ref": "#/entities/Image" },
+              "description": "Subcollection for images within a module."
             }
-          ]
-        }
-      },
-      {
-        "path": "/ai_books/{aiBookId}",
-        "definition": {
-          "entityName": "AiBook",
-          "schema": {
-            "$ref": "#/backend/entities/AiBook"
-          },
-          "description": "Stores AI-Books metadata. The structure facilitates listing operations since all AI-Books share the same security requirements.",
-          "params": [
-            {
-              "name": "aiBookId",
-              "description": "The unique identifier of the AI-Book."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/ai_books/{aiBookId}/modules/{moduleId}",
-        "definition": {
-          "entityName": "Module",
-          "schema": {
-            "$ref": "#/backend/entities/Module"
-          },
-          "description": "Stores modules associated with an AI-Book.",
-          "params": [
-            {
-              "name": "aiBookId",
-              "description": "The unique identifier of the AI-Book."
-            },
-            {
-              "name": "moduleId",
-              "description": "The unique identifier of the Module."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/ai_books/{aiBookId}/modules/{moduleId}/images/{imageId}",
-        "definition": {
-          "entityName": "Image",
-          "schema": {
-            "$ref": "#/backend/entities/Image"
-          },
-          "description": "Stores images associated with a module.",
-          "params": [
-            {
-              "name": "aiBookId",
-              "description": "The unique identifier of the AI-Book."
-            },
-            {
-              "name": "moduleId",
-              "description": "The unique identifier of the Module."
-            },
-            {
-              "name": "imageId",
-              "description": "The unique identifier of the Image."
-            }
-          ]
+          }
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to support the AI-Book Factory application, prioritizing authorization independence, clarity, and scalability. The core entities are AiBook, Module, and Image, with a hierarchical relationship (AiBook 1:N Module, Module 1:N Image).  Authorization is handled implicitly via path-based ownership. This design enables secure list operations without filtering in rules (QAPs) and ensures that all documents within a collection share the same security requirements (Homogeneous Security Posture).  The design facilitates atomic operations by avoiding hierarchical authorization dependencies.\n\nSpecifically:\n\n*   `/ai_books/{aiBookId}`: Stores the main AI-Book metadata. The structure facilitates listing operations since all AI-Books share the same security requirements.\n*   `/ai_books/{aiBookId}/modules/{moduleId}`: Stores modules associated with an AI-Book.\n*   `/ai_books/{aiBookId}/modules/{moduleId}/images/{imageId}`: Stores images associated with a module."
+    }
   }
 }
