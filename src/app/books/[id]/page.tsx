@@ -1,3 +1,4 @@
+
 "use client";
 import React, { use } from 'react';
 import { Book, Palette, ShoppingCart, ArrowLeft, LoaderCircle } from "lucide-react";
@@ -13,7 +14,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
 
-export default function BookEditorPage({ params: paramsPromise }: { params: { id: string } }) {
+export default function BookEditorPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
     const firestore = useFirestore();
     const params = use(paramsPromise);
     const { id: bookId } = params;
@@ -45,6 +46,11 @@ export default function BookEditorPage({ params: paramsPromise }: { params: { id
                 </Button>
             </div>
         )
+    }
+    
+    const bookWithDefaults = {
+        ...book,
+        modules: book.modules ?? [],
     }
 
     return (
@@ -98,10 +104,10 @@ export default function BookEditorPage({ params: paramsPromise }: { params: { id
 
             <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
                 <TabsContent value="editor" className="focus-visible:ring-0 focus-visible:ring-offset-0">
-                    <EditorTab initialBookState={book} />
+                    <EditorTab initialBookState={bookWithDefaults} />
                 </TabsContent>
                 <TabsContent value="sales" className="focus-visible:ring-0 focus-visible:ring-offset-0">
-                    <SalesTab book={book} />
+                    <SalesTab book={bookWithDefaults} />
                 </TabsContent>
             </div>
             </Tabs>

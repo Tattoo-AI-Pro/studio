@@ -1,30 +1,27 @@
-import type { AiBook } from './types';
+
+import { AiBook } from './types';
+import { PlaceHolderImages } from './placeholder-images';
+
+// This is a helper function to find an image from our placeholder JSON
+const findImage = (id: string) => {
+    const img = PlaceHolderImages.find(p => p.id === id);
+    if (!img) throw new Error(`Placeholder image with id "${id}" not found.`);
+    return img.imageUrl;
+}
 
 // This data is a mock and will be replaced with live data from Firestore.
 // It uses placeholder images for demonstration. In a real scenario,
 // these URLs would come from a user's upload or a generated source.
-
-const placeholderImages = {
-    cover: 'https://picsum.photos/seed/bookcover/1200/800',
-    tattoo1: 'https://picsum.photos/seed/tattoo1/600/800',
-    tattoo2: 'https://picsum.photos/seed/tattoo2/600/800',
-    tattoo3: 'https://picsum.photos/seed/tattoo3/600/800',
-    tattoo4: 'https://picsum.photos/seed/tattoo4/600/800',
-    tattoo5: 'https://picsum.photos/seed/tattoo5/600/800',
-    tattoo6: 'https://picsum.photos/seed/tattoo6/600/800',
-};
-
-
-export const placeholderBook: AiBook = {
-  id: '1',
-  ownerId: 'placeholder-owner',
-  name: 'AI-BOOK: Tatuagens Místicas + Significados',
+export const placeholderBookData: AiBook = {
+  id: 'placeholder-book-1',
+  ownerId: 'placeholder-owner-id',
+  name: 'Tatuagens Místicas: Uma Coleção AI',
   shortDescription: 'Uma coleção de tatuagens místicas com seus significados profundos, gerada por IA.',
   longDescription: 'Explore um universo de símbolos e significados com esta coleção exclusiva. Cada tatuagem foi analisada e descrita por nossa IA para oferecer inspiração e conhecimento. Perfeito para quem busca uma tatuagem com alma e história.',
-  theme: 'Místico',
+  theme: 'Místico & Esotérico',
   targetAudience: 'Pessoas interessadas em espiritualidade, simbologia e tatuagens com significado.',
   tags: ['místico', 'espiritual', 'símbolos', 'significado', '2026'],
-  coverArtUrl: placeholderImages.cover,
+  coverArtUrl: findImage('cover-art-1'),
   price: 99.90,
   promoPrice: 49.90,
   modules: [
@@ -35,7 +32,7 @@ export const placeholderBook: AiBook = {
       images: [
         {
           id: 'img-1',
-          sourceUrl: placeholderImages.tattoo1,
+          sourceUrl: findImage('tattoo-1'),
           aiTitle: 'Voo da Liberdade',
           aiDescription: 'Um avião de papel simbolizando a liberdade, a jornada e a leveza da alma. Ideal para pulsos e tornozelos.',
           aiTheme: 'Minimalista',
@@ -45,7 +42,7 @@ export const placeholderBook: AiBook = {
         },
         {
           id: 'img-4',
-          sourceUrl: placeholderImages.tattoo4,
+          sourceUrl: findImage('tattoo-4'),
           aiTitle: 'Poeira Estelar',
           aiDescription: 'Uma constelação delicada que representa a conexão com o cosmos e o universo interior.',
           aiTheme: 'Celestial',
@@ -54,14 +51,14 @@ export const placeholderBook: AiBook = {
           aiInstagramCaption: 'Escrito nas estrelas. ✨ #celestialtattoo #constellation #startattoo',
         },
         {
-          id: 'img-6',
-          sourceUrl: placeholderImages.tattoo6,
-          aiTitle: 'Luz Interior',
-          aiDescription: 'Um pequeno sol que representa a energia vital, a luz interior e o otimismo.',
-          aiTheme: 'Celestial',
-          aiStyle: 'Minimalista',
-          aiSeoTags: ['sol', 'minimalista', 'energia'],
-          aiInstagramCaption: 'Seja sua própria luz. ☀️ #suntattoo #tinytattoo #minimalist',
+            id: 'img-10',
+            sourceUrl: findImage('tattoo-10'),
+            aiTitle: 'Luz Interior',
+            aiDescription: 'Um pequeno sol que representa a energia vital, a luz interior e o otimismo.',
+            aiTheme: 'Celestial',
+            aiStyle: 'Minimalista',
+            aiSeoTags: ['sol', 'minimalista', 'energia'],
+            aiInstagramCaption: 'Seja sua própria luz. ☀️ #suntattoo #tinytattoo #minimalist',
         },
       ],
     },
@@ -72,7 +69,7 @@ export const placeholderBook: AiBook = {
       images: [
         {
           id: 'img-2',
-          sourceUrl: placeholderImages.tattoo2,
+          sourceUrl: findImage('tattoo-9'),
           aiTitle: 'Florescer da Alma',
           aiDescription: 'Um braço adornado com flores realistas, simbolizando o florescimento pessoal e a beleza da natureza.',
           aiTheme: 'Floral',
@@ -82,7 +79,7 @@ export const placeholderBook: AiBook = {
         },
         {
           id: 'img-5',
-          sourceUrl: placeholderImages.tattoo5,
+          sourceUrl: findImage('tattoo-5'),
           aiTitle: 'Olhar da Deusa',
           aiDescription: 'Um retrato feminino hiper-realista que captura a força e a serenidade do arquétipo da deusa.',
           aiTheme: 'Retrato',
@@ -99,7 +96,7 @@ export const placeholderBook: AiBook = {
         images: [
             {
                 id: 'img-3',
-                sourceUrl: placeholderImages.tattoo3,
+                sourceUrl: findImage('tattoo-3'),
                 aiTitle: 'Lobo Geométrico',
                 aiDescription: 'A força e a inteligência do lobo representadas em traços geométricos precisos, unindo natureza e ordem.',
                 aiTheme: 'Animal',
