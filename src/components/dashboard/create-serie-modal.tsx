@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { Serie } from '@/lib/types';
+import { generateAiBookSuggestions, type AiBookSuggestionsInput } from '@/ai/flows/ai-suggestions-book-creation';
 
 interface CreateSerieModalProps {
   open: boolean;
@@ -34,6 +35,7 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
   const { toast } = useToast();
   
   const [isCreating, setIsCreating] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
@@ -99,6 +101,41 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
     }
   };
 
+  const handleSuggest = async () => {
+    setIsSuggesting(true);
+    try {
+        const input: AiBookSuggestionsInput = {
+            name: title,
+            price: 0, // Price is not part of the form yet
+            description: description,
+            targetAudience: targetAudience,
+        };
+        const suggestions = await generateAiBookSuggestions(input);
+        
+        if (suggestions.suggestedTitle) {
+            setTitle(suggestions.suggestedTitle);
+        }
+        if (suggestions.improvedDescription) {
+            setDescription(suggestions.improvedDescription);
+        }
+
+        toast({
+            title: 'Sugestões aplicadas!',
+            description: 'A IA refinou o título e a descrição da sua coleção.',
+        });
+
+    } catch (error) {
+        console.error('Error getting AI suggestions:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Erro ao buscar sugestões',
+            description: 'Não foi possível obter sugestões da IA. Tente novamente.',
+        });
+    } finally {
+        setIsSuggesting(false);
+    }
+  }
+
   const resetForm = () => {
     setTitle('');
     setDescription('');
@@ -112,6 +149,8 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
     onOpenChange(isOpen);
   }
 
+  const isLoading = isCreating || isSuggesting;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -124,7 +163,7 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
         <DialogHeader>
           <DialogTitle className="font-semibold text-2xl">Criar Nova Coleção</DialogTitle>
           <DialogDescription>
-            Defina as informações iniciais da sua nova coleção de tatuagens. Você poderá refinar os detalhes depois.
+            Defina as informações iniciais da sua nova coleção de tatuagens. Você pode usar a IA para refinar os detalhes.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6 py-4">
@@ -135,6 +174,7 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Tatuagens Florais Minimalistas"
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-3">
@@ -145,6 +185,7 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva a essência da sua coleção. Para quem ela é?"
               className="min-h-24"
+              disabled={isLoading}
             />
           </div>
           <div className="grid gap-3">
@@ -154,15 +195,20 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value)}
               placeholder="Ex: Mulheres de 20-35 anos que amam natureza"
+              disabled={isLoading}
             />
           </div>
         </div>
         <DialogFooter>
-            <Button variant="outline" className="gap-2" disabled={isCreating}>
-                <Sparkles className="w-4 h-4" />
+            <Button variant="outline" className="gap-2" onClick={handleSuggest} disabled={isLoading}>
+                {isSuggesting ? (
+                    <LoaderCircle className="w-4 h-4 animate-spin" />
+                ) : (
+                    <Sparkles className="w-4 h-4" />
+                )}
                 Sugerir com IA
             </Button>
-            <Button onClick={handleCreate} disabled={isCreating}>
+            <Button onClick={handleCreate} disabled={isLoading}>
                 {isCreating ? (
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
