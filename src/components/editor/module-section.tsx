@@ -114,6 +114,14 @@ export function ModuleSection({
     }
   };
 
+  const sortedTattoos = (module.tatuagens ?? []).sort((a, b) => {
+    const dateA = a.data_criacao?.toDate?.() ?? 0;
+    const dateB = b.data_criacao?.toDate?.() ?? 0;
+    if(dateA < dateB) return -1;
+    if(dateA > dateB) return 1;
+    return 0;
+  });
+
   return (
     <Card className="overflow-hidden">
       <CardHeader>
@@ -177,7 +185,7 @@ export function ModuleSection({
             </div>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {(module.tatuagens ?? []).map((image) => (
+          {sortedTattoos.map((image) => (
             <ImageCard
               key={image.id}
               image={image}

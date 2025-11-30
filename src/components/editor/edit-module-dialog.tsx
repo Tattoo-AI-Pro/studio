@@ -23,7 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 interface EditModuleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: Omit<Modulo, 'id'>, moduleId?: string) => Promise<void>;
+  onSave: (data: Partial<Omit<Modulo, 'id'>>, moduleId?: string) => Promise<void>;
   module: Modulo | null;
 }
 
@@ -61,7 +61,6 @@ export function EditModuleDialog({
     await onSave({
         titulo: title,
         descricao: description,
-        // ordem, data e counts são gerenciados pelo `EditorTab`
     }, module?.id);
     setIsSaving(false);
   };

@@ -72,9 +72,15 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
     setBook(updatedBook);
 
     const bookRef = doc(firestore, "series", book.id);
+    // Firestore does not support saving `undefined` fields.
+    const modulesToSave = updatedModules.map(m => ({
+      ...m,
+      tatuagens: m.tatuagens ?? [],
+    }));
+
     updateDocumentNonBlocking(bookRef, { 
-      modulos: updatedModules,
-      modulos_count: updatedModules.length,
+      modulos: modulesToSave,
+      modulos_count: modulesToSave.length,
       data_atualizacao: serverTimestamp()
      });
   };
@@ -112,7 +118,7 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
     }
   };
 
-  const handleSaveModule = async (moduleData: Omit<Modulo, 'id'>, moduleId?: string) => {
+  const handleSaveModule = async (moduleData: Partial<Omit<Modulo, 'id'>>, moduleId?: string) => {
     const batch = writeBatch(firestore);
     const modulesCollectionRef = collection(firestore, `series/${book.id}/modulos`);
     
@@ -122,18 +128,20 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
       
       setBook(prev => ({
         ...prev,
-        modulos: (prev.modulos ?? []).map(m => m.id === moduleId ? { ...m, ...moduleData } : m)
+        modulos: (prev.modulos ?? []).map(m => m.id === moduleId ? { ...m, ...moduleData } as Modulo : m)
       }));
 
     } else { // Creating new module
       const newModuleRef = doc(modulesCollectionRef);
       const newModule: Modulo = {
-        ...moduleData,
+        titulo: moduleData.titulo!,
+        descricao: moduleData.descricao!,
         id: newModuleRef.id,
         ordem: (book.modulos?.length ?? 0) + 1,
         data_criacao: serverTimestamp(),
         data_atualizacao: serverTimestamp(),
-        tatuagens_count: 0
+        tatuagens_count: 0,
+        tatuagens: [],
       };
       batch.set(newModuleRef, newModule);
 
@@ -184,12 +192,20 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
 
     setDeletingModule(null);
   };
+  
+  const sortedModules = (book.modulos ?? []).sort((a, b) => {
+    const dateA = a.data_criacao?.toDate?.() ?? 0;
+    const dateB = b.data_criacao?.toDate?.() ?? 0;
+    if(dateA < dateB) return -1;
+    if(dateA > dateB) return 1;
+    return 0;
+  });
 
   return (
     <>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <h2 className="font-headline text-2xl">Editor Visual</h2>
+          <h2 className="font-semibold text-2xl">Editor Visual</h2>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setCreateModuleOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -207,15 +223,18 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
         </div>
 
         <div className="space-y-12">
-          {(book.modulos ?? []).sort((a, b) => a.ordem - b.ordem).map((module, moduleIndex) => (
+          {sortedModules.map((module) => (
             <ModuleSection
               key={module.id}
               module={module}
               onEditImage={setEditingImage}
               onImagesChange={(newImages) => {
                 const newModules = [...(book.modulos ?? [])];
-                newModules[moduleIndex].tatuagens = newImages;
-                handleModulesUpdate(newModules);
+                const moduleIndex = newModules.findIndex(m => m.id === module.id);
+                if (moduleIndex > -1) {
+                    newModules[moduleIndex].tatuagens = newImages;
+                    handleModulesUpdate(newModules);
+                }
               }}
               bookId={book.id}
               onEditModule={() => setEditingModule(module)}
