@@ -2,7 +2,8 @@
 import { NextResponse } from 'next/server';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server'; // Using server-side initialization
-import type { AiBook, Module, ImageItem } from '@/lib/types';
+import type { AiBook, Module } from '@/lib/types';
+import type { Image as ImageItem } from '@/lib/types';
 
 // IMPORTANT: This function needs to be 'GET' to be a public API route
 export async function GET(
@@ -45,7 +46,7 @@ export async function GET(
       modules.push({
         id: moduleDoc.id,
         name: moduleData.name,
-        description: moduleData.description,
+        description: moduleData.description, // Correctly using the description field
         images: images,
       });
     }
