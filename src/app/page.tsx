@@ -1,7 +1,7 @@
-
 "use client";
 
-import { Book, DollarSign, Image as ImageIcon, PlusCircle, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Book, DollarSign, Image as ImageIcon, Pencil } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -9,13 +9,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { collection, query, where } from "firebase/firestore";
 import type { Serie } from "@/lib/types";
+import { CreateSerieModal } from "@/components/dashboard/create-serie-modal";
 
 const dashboardMetrics = [
   {
@@ -113,6 +112,7 @@ function MyCollections() {
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -140,12 +140,7 @@ export default function DashboardPage() {
             )}
           </div>
           {user && (
-            <Button asChild size="sm" className="ml-auto gap-1">
-              <Link href="/books/new">
-                Criar Coleção
-                <PlusCircle className="h-4 w-4" />
-              </Link>
-            </Button>
+             <CreateSerieModal open={isCreateModalOpen} onOpenChange={setCreateModalOpen} />
           )}
         </div>
 
