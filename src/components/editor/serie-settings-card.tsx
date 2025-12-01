@@ -105,23 +105,25 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
   }, [book, form]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUri = e.target?.result as string;
-      form.setValue('capa_url', dataUri, { shouldDirty: true });
-    };
-    reader.readAsDataURL(file);
+    // This functionality is disabled to prevent Firestore document size limit errors.
+    // We will use a placeholder service instead.
+    toast({
+      variant: 'destructive',
+      title: 'Upload desativado',
+      description: 'O upload de capa foi desativado para evitar erros. A capa será gerada a partir do título.',
+    });
   };
 
   const onSubmit = async (data: SerieFormData) => {
     setIsSaving(true);
     const bookRef = doc(firestore, 'series', book.id);
     
+    // Generate a placeholder URL from the title
+    const generatedCapaUrl = `https://picsum.photos/seed/${data.titulo.replace(/\s+/g, '-')}/800/600`;
+
     const updateData = {
       ...data,
+      capa_url: generatedCapaUrl, // Use the generated placeholder URL
       tags_gerais: data.tags_gerais?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       data_atualizacao: serverTimestamp(),
     };
@@ -138,9 +140,9 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
       });
       setIsSaving(false);
       form.reset({
-        ...data,
+        ...updateData, // Use updateData to resync form with what was saved
         tags_gerais: updateData.tags_gerais.join(', ')
-      }); // resync form with saved data
+      }); 
     }, 500);
   };
 
@@ -174,8 +176,8 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
                         </div>
                     )}
                  </div>
-                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                    Alterar Capa
+                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} disabled>
+                    Alterar Capa (Desativado)
                  </Button>
                  <input 
                     type="file" 
@@ -316,3 +318,5 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
     </Card>
   );
 }
+
+    

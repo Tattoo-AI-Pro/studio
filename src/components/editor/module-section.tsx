@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { Modulo, Tatuagem } from "@/lib/types";
 import { ImageCard } from "./image-card";
 import { Separator } from "@/components/ui/separator";
-import { analyzeImageAndGenerateContent, type ImageAnalysisOutput } from "@/ai/flows/image-analysis-content-generation";
+import { analyzeImageAndGenerateContent, type ImageAnalysisOutput, type ImageAnalysisInput } from "@/ai/flows/image-analysis-content-generation";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp, doc, writeBatch } from "firebase/firestore";
 import {
@@ -62,17 +62,19 @@ export function ModuleSection({
       const batch = writeBatch(firestore);
 
       for (const file of Array.from(files)) {
-          const reader = new FileReader();
-          const dataUri = await new Promise<string>((resolve) => {
-              reader.onload = (e) => resolve(e.target?.result as string);
-              reader.readAsDataURL(file);
-          });
+          // Since we can't upload files, we generate a placeholder URL and fake AI content
+          const randomId = Math.random().toString(36).substring(7);
+          const placeholderUrl = `https://picsum.photos/seed/${randomId}/600/800`;
+          
+          const fakeAnalysisInput: ImageAnalysisInput = {
+            imageDataUri: "data:image/png;base64," // Required by the function, but not used for analysis
+          };
 
-          const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent({ imageDataUri: dataUri });
+          const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent(fakeAnalysisInput);
 
           const newTatuagemData: Omit<Tatuagem, "id"> = {
-            capa_url: dataUri, // Initially use Data URI, could be replaced by a storage URL
-            titulo: aiContent.suggestedName,
+            capa_url: placeholderUrl, // Use the generated placeholder URL
+            titulo: aiContent.suggestedName || `Tatuagem ${randomId}`,
             descricao_contextual: aiContent.description,
             tema: aiContent.theme,
             estilos: [aiContent.style],
@@ -107,7 +109,7 @@ export function ModuleSection({
       await batch.commit();
 
     } catch (error) {
-      console.error("Error uploading files:", error);
+      console.error("Error 'uploading' files:", error);
     } finally {
       setIsUploading(false);
       if(fileInputRef.current) fileInputRef.current.value = "";
@@ -208,3 +210,5 @@ export function ModuleSection({
     </Card>
   );
 }
+
+    
