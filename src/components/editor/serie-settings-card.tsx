@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { doc, serverTimestamp } from 'firebase/firestore';
-import { LoaderCircle, Save, Image as ImageIcon, PlusCircle, Sparkles } from 'lucide-react';
+import { LoaderCircle, Save, Image as ImageIcon, PlusCircle, Sparkles, RefreshCcw } from 'lucide-react';
 import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { Serie } from '@/lib/types';
@@ -75,7 +75,6 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<SerieFormData>({
     resolver: zodResolver(serieSchema),
@@ -104,33 +103,27 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
     });
   }, [book, form]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // This functionality is disabled to prevent Firestore document size limit errors.
-    // We will use a placeholder service instead.
-    toast({
-      variant: 'destructive',
-      title: 'Upload desativado',
-      description: 'O upload de capa foi desativado para evitar erros. A capa será gerada a partir do título.',
-    });
+  const handleGenerateCover = () => {
+    const title = form.getValues('titulo') || 'default';
+    // Generate a new random seed to get a new image
+    const randomSeed = Math.random().toString(36).substring(7);
+    const generatedCapaUrl = `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}-${randomSeed}/800/600`;
+    form.setValue('capa_url', generatedCapaUrl, { shouldDirty: true });
   };
 
   const onSubmit = async (data: SerieFormData) => {
     setIsSaving(true);
     const bookRef = doc(firestore, 'series', book.id);
-    
-    // Generate a placeholder URL from the title
-    const generatedCapaUrl = `https://picsum.photos/seed/${data.titulo.replace(/\s+/g, '-')}/800/600`;
 
     const updateData = {
       ...data,
-      capa_url: generatedCapaUrl, // Use the generated placeholder URL
+      capa_url: data.capa_url || `https://picsum.photos/seed/${data.titulo.replace(/\s+/g, '-')}/800/600`,
       tags_gerais: data.tags_gerais?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       data_atualizacao: serverTimestamp(),
     };
 
     updateDocumentNonBlocking(bookRef, updateData);
     
-    // Optimistically update local state
     onBookUpdate({ ...book, ...updateData });
 
     setTimeout(() => {
@@ -140,7 +133,7 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
       });
       setIsSaving(false);
       form.reset({
-        ...updateData, // Use updateData to resync form with what was saved
+        ...updateData,
         tags_gerais: updateData.tags_gerais.join(', ')
       }); 
     }, 500);
@@ -176,16 +169,10 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
                         </div>
                     )}
                  </div>
-                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()} disabled>
-                    Alterar Capa (Desativado)
+                 <Button type="button" variant="outline" className="w-full gap-2" onClick={handleGenerateCover}>
+                    <RefreshCcw className="w-4 h-4" />
+                    Gerar Nova Capa
                  </Button>
-                 <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
             </div>
             <div className="md:col-span-2 space-y-6">
                 <FormField
