@@ -15,6 +15,7 @@ import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebas
 import { collection, query, where } from "firebase/firestore";
 import type { Serie } from "@/lib/types";
 import { CreateSerieModal } from "@/components/dashboard/create-serie-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const dashboardMetrics = [
   {
@@ -123,7 +124,8 @@ export default function DashboardPage() {
             Estúdio de Tatuagem
           </span>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
           <AuthButton />
         </div>
       </header>

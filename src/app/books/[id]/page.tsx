@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import { Book, Palette, ShoppingCart, ArrowLeft, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Serie } from "@/lib/types";
@@ -94,8 +95,9 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
                 </Link>
             </Button>
             </nav>
-            <div className="ml-auto">
-            <AuthButton />
+            <div className="ml-auto flex items-center gap-2">
+                <ThemeToggle />
+                <AuthButton />
             </div>
         </header>
         <main className="flex flex-1 flex-col">
