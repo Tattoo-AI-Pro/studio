@@ -1,0 +1,20 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // As regras são aplicadas a todos os arquivos no seu bucket de armazenamento.
+    
+    // Permite que qualquer pessoa leia os arquivos. 
+    // Isso é necessário para que as imagens possam ser exibidas publicamente no aplicativo.
+    match /{allPaths=**} {
+      allow read;
+    }
+
+    // Restringe a escrita (upload, atualização, exclusão) apenas a usuários autenticados.
+    // E somente dentro da pasta 'series'.
+    match /series/{path=**} {
+      allow write: if request.auth != null;
+    }
+  }
+}
