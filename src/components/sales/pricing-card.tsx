@@ -38,6 +38,8 @@ export function PricingCard({ book }: PricingCardProps) {
             data_atualizacao: serverTimestamp()
         });
 
+        // The non-blocking update is very fast, so we can show the toast almost immediately.
+        // A short delay can make the UI feel more responsive.
         setTimeout(() => {
             toast({
                 title: "Preços salvos",
@@ -59,7 +61,10 @@ export function PricingCard({ book }: PricingCardProps) {
         <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="price" className="font-semibold">Preço Padrão (BRL)</Label>
-                <Input id="price" type="number" placeholder="99.90" value={price} onChange={e => setPrice(Number(e.target.value))}/>
+                <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">R$</span>
+                    <Input id="price" type="number" placeholder="99,90" value={price} onChange={e => setPrice(Number(e.target.value))} className="pl-9"/>
+                </div>
             </div>
         </div>
       </CardContent>
