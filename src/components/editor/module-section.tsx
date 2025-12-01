@@ -18,6 +18,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical } from "lucide-react";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useToast } from "@/hooks/use-toast";
+
+
+async function uploadImage(file: File, path: string): Promise<string> {
+    const storage = getStorage();
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+}
+
+const fileToDataUri = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
 
 
 interface ModuleSectionProps {
@@ -39,6 +59,7 @@ export function ModuleSection({
   const { user } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
   const tattoosQuery = useMemoFirebase(() => {
     if (!bookId || !module.id) return null;
@@ -57,23 +78,29 @@ export function ModuleSection({
 
     setIsUploading(true);
     const newUploadCount = files.length;
+    
+    toast({
+      title: "Iniciando upload...",
+      description: `Analisando e enviando ${newUploadCount} imagem(ns).`,
+    });
 
     try {
       const batch = writeBatch(firestore);
 
       for (const file of Array.from(files)) {
-          // Since we can't upload files, we generate a placeholder URL and fake AI content
-          const randomId = Math.random().toString(36).substring(7);
-          const placeholderUrl = `https://picsum.photos/seed/${randomId}/600/800`;
+          const randomId = doc(collection(firestore, 'tattoos')).id; // Generate a unique ID for the image
+          const imageUrl = await uploadImage(file, `series/${bookId}/tattoos/${randomId}`);
           
-          const fakeAnalysisInput: ImageAnalysisInput = {
-            imageDataUri: "data:image/png;base64," // Required by the function, but not used for analysis
+          const imageDataUri = await fileToDataUri(file);
+
+          const analysisInput: ImageAnalysisInput = {
+            imageDataUri,
           };
 
-          const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent(fakeAnalysisInput);
+          const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent(analysisInput);
 
           const newTatuagemData: Omit<Tatuagem, "id"> = {
-            capa_url: placeholderUrl, // Use the generated placeholder URL
+            capa_url: imageUrl,
             titulo: aiContent.suggestedName || `Tatuagem ${randomId}`,
             descricao_contextual: aiContent.description,
             tema: aiContent.theme,
@@ -100,7 +127,6 @@ export function ModuleSection({
           batch.set(newTattooRef, newTatuagemData);
       }
       
-      // Update tattoo count on the module
       const moduleRef = doc(firestore, `series/${bookId}/modulos/${module.id}`);
       batch.update(moduleRef, {
         tatuagens_count: (module.tatuagens_count ?? 0) + newUploadCount
@@ -108,8 +134,18 @@ export function ModuleSection({
 
       await batch.commit();
 
+      toast({
+        title: "Upload concluído!",
+        description: `${newUploadCount} tatuagem(ns) adicionada(s) com sucesso.`,
+      });
+
     } catch (error) {
-      console.error("Error 'uploading' files:", error);
+      console.error("Error uploading files:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro no Upload",
+        description: "Não foi possível enviar as imagens. Tente novamente.",
+      });
     } finally {
       setIsUploading(false);
       if(fileInputRef.current) fileInputRef.current.value = "";
@@ -210,5 +246,3 @@ export function ModuleSection({
     </Card>
   );
 }
-
-    

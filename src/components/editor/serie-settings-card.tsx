@@ -5,8 +5,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { doc, serverTimestamp } from 'firebase/firestore';
-import { LoaderCircle, Save, Image as ImageIcon, PlusCircle, Sparkles, RefreshCcw } from 'lucide-react';
+import { doc, serverTimestamp, collection } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { LoaderCircle, Save, Image as ImageIcon, PlusCircle, Sparkles, UploadCloud } from 'lucide-react';
 import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { Serie } from '@/lib/types';
@@ -71,10 +72,21 @@ const StringToArrayInput = ({ value, onChange, placeholder }: { value: string, o
     );
 };
 
+async function uploadImage(file: File, path: string): Promise<string> {
+    const storage = getStorage();
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+}
+
 export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompile, isCompiling }: SerieSettingsCardProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const form = useForm<SerieFormData>({
     resolver: zodResolver(serieSchema),
@@ -103,12 +115,38 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
     });
   }, [book, form]);
 
-  const handleGenerateCover = () => {
-    const title = form.getValues('titulo') || 'default';
-    // Generate a new random seed to get a new image
-    const randomSeed = Math.random().toString(36).substring(7);
-    const generatedCapaUrl = `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}-${randomSeed}/800/600`;
-    form.setValue('capa_url', generatedCapaUrl, { shouldDirty: true });
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCoverImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingCover(true);
+    toast({
+      title: "Enviando nova capa...",
+      description: "Aguarde enquanto a nova imagem de capa é enviada.",
+    });
+
+    try {
+      const coverPath = `series/${book.id}/cover/${file.name}`;
+      const downloadUrl = await uploadImage(file, coverPath);
+      form.setValue('capa_url', downloadUrl, { shouldDirty: true });
+      toast({
+        title: "Capa atualizada!",
+        description: "A nova imagem de capa está pronta. Clique em salvar para confirmar.",
+      });
+    } catch (error) {
+      console.error("Error uploading cover image:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro no Upload da Capa",
+        description: "Não foi possível enviar a nova imagem. Tente novamente."
+      });
+    } finally {
+      setIsUploadingCover(false);
+    }
   };
 
   const onSubmit = async (data: SerieFormData) => {
@@ -117,7 +155,7 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
 
     const updateData = {
       ...data,
-      capa_url: data.capa_url || `https://picsum.photos/seed/${data.titulo.replace(/\s+/g, '-')}/800/600`,
+      capa_url: data.capa_url, // URL should be set by the upload now
       tags_gerais: data.tags_gerais?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       data_atualizacao: serverTimestamp(),
     };
@@ -153,7 +191,11 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
             <div className="space-y-3 flex flex-col items-center">
                  <FormLabel className="font-semibold w-full text-left">Imagem de Capa</FormLabel>
                  <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden relative border">
-                    {capaUrl ? (
+                    {isUploadingCover ? (
+                         <div className="w-full h-full flex items-center justify-center flex-col gap-2 text-muted-foreground">
+                            <LoaderCircle className="w-10 h-10 animate-spin" />
+                         </div>
+                    ) : capaUrl ? (
                          <Image 
                             src={capaUrl}
                             alt="Capa da coleção"
@@ -169,10 +211,17 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
                         </div>
                     )}
                  </div>
-                 <Button type="button" variant="outline" className="w-full gap-2" onClick={handleGenerateCover}>
-                    <RefreshCcw className="w-4 h-4" />
-                    Gerar Nova Capa
+                 <Button type="button" variant="outline" className="w-full gap-2" onClick={handleUploadClick} disabled={isUploadingCover}>
+                    <UploadCloud className="w-4 h-4" />
+                    Trocar Imagem
                  </Button>
+                 <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleCoverImageChange}
+                    className="hidden"
+                    accept="image/*"
+                />
             </div>
             <div className="md:col-span-2 space-y-6">
                 <FormField
@@ -278,8 +327,8 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
             </div>
           </CardContent>
           <CardFooter className="flex-col sm:flex-row items-center gap-2 border-t pt-6">
-            <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
-              {isSaving ? (
+            <Button type="submit" disabled={isSaving || isUploadingCover || !form.formState.isDirty}>
+              {isSaving || isUploadingCover ? (
                 <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
@@ -293,7 +342,7 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
             </Button>
             <Button onClick={onCompile} disabled={isCompiling}>
                 {isCompiling ? (
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderCircle className="mr-2 h-4 mr-2 animate-spin" />
                 ) : (
                 <Sparkles className="mr-2 h-4 mr-2" />
                 )}
@@ -305,5 +354,3 @@ export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompil
     </Card>
   );
 }
-
-    
