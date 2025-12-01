@@ -120,6 +120,36 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-3 flex flex-col items-center">
+                 <FormLabel className="font-semibold w-full text-center md:text-left">Imagem de Capa</FormLabel>
+                 <div className="w-full aspect-[3/4] bg-muted rounded-lg overflow-hidden relative border">
+                    {capaUrl ? (
+                         <Image 
+                            src={capaUrl}
+                            alt="Capa da coleção"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 80vw, 30vw"
+                            data-ai-hint="book cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center flex-col gap-2 text-muted-foreground">
+                            <ImageIcon className="w-10 h-10" />
+                            <span className="text-sm">Sem capa</span>
+                        </div>
+                    )}
+                 </div>
+                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                    Alterar Capa
+                 </Button>
+                 <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
+            </div>
             <div className="md:col-span-2 space-y-6">
                 <FormField
                 control={form.control}
@@ -174,37 +204,6 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
                 )}
                 />
             </div>
-            <div className="space-y-3 flex flex-col items-center">
-                 <FormLabel className="font-semibold w-full text-center md:text-left">Imagem de Capa</FormLabel>
-                 <div className="w-full aspect-[3/4] bg-muted rounded-lg overflow-hidden relative border">
-                    {capaUrl ? (
-                         <Image 
-                            src={capaUrl}
-                            alt="Capa da coleção"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 80vw, 30vw"
-                            data-ai-hint="book cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center flex-col gap-2 text-muted-foreground">
-                            <ImageIcon className="w-10 h-10" />
-                            <span className="text-sm">Sem capa</span>
-                        </div>
-                    )}
-                 </div>
-                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                    Alterar Capa
-                 </Button>
-                 <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-            </div>
-
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
