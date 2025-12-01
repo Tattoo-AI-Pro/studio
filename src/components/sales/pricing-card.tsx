@@ -23,6 +23,7 @@ interface PricingCardProps {
     book: Serie;
 }
 
+// THIS COMPONENT IS DEPRECATED AND WILL BE REMOVED
 export function PricingCard({ book }: PricingCardProps) {
     const firestore = useFirestore();
     const { toast } = useToast();

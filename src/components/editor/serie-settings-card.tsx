@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Image from 'next/image';
+import { Badge } from '../ui/badge';
 
 
 interface SerieSettingsCardProps {
@@ -40,11 +41,32 @@ interface SerieSettingsCardProps {
 const serieSchema = z.object({
   titulo: z.string().min(1, { message: 'O título é obrigatório.' }),
   descricao: z.string().optional(),
+  publico_alvo: z.string().optional(),
+  preco: z.coerce.number().min(0, { message: 'O preço não pode ser negativo.'}),
+  tags_gerais: z.string().optional(),
   status: z.enum(['rascunho', 'publicada', 'pausada']),
   capa_url: z.string().optional(),
 });
 
 type SerieFormData = z.infer<typeof serieSchema>;
+
+const StringToArrayInput = ({ value, onChange, placeholder }: { value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder?: string }) => {
+    const items = value.split(',').map(item => item.trim()).filter(Boolean);
+    return (
+      <div>
+        <Input
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+        />
+        <div className="flex flex-wrap gap-1 pt-2">
+          {items.map((item, i) => (
+            <Badge key={i} variant="secondary">{item}</Badge>
+          ))}
+        </div>
+      </div>
+    );
+};
 
 export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps) {
   const firestore = useFirestore();
@@ -57,6 +79,9 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
     defaultValues: {
       titulo: book.titulo || '',
       descricao: book.descricao || '',
+      publico_alvo: book.publico_alvo || '',
+      preco: book.preco || 0,
+      tags_gerais: (book.tags_gerais || []).join(', '),
       status: book.status || 'rascunho',
       capa_url: book.capa_url || '',
     },
@@ -68,6 +93,9 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
     form.reset({
       titulo: book.titulo,
       descricao: book.descricao,
+      publico_alvo: book.publico_alvo,
+      preco: book.preco,
+      tags_gerais: (book.tags_gerais || []).join(', '),
       status: book.status,
       capa_url: book.capa_url,
     });
@@ -91,13 +119,14 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
     
     const updateData = {
       ...data,
+      tags_gerais: data.tags_gerais?.split(',').map(tag => tag.trim()).filter(Boolean) || [],
       data_atualizacao: serverTimestamp(),
     };
 
     updateDocumentNonBlocking(bookRef, updateData);
     
     // Optimistically update local state
-    onBookUpdate({ ...book, ...data });
+    onBookUpdate({ ...book, ...updateData });
 
     setTimeout(() => {
       toast({
@@ -105,7 +134,10 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
         description: 'As informações da coleção foram atualizadas.',
       });
       setIsSaving(false);
-      form.reset(data); // resync form with saved data
+      form.reset({
+        ...data,
+        tags_gerais: updateData.tags_gerais.join(', ')
+      }); // resync form with saved data
     }, 500);
   };
 
@@ -122,7 +154,7 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="space-y-3 flex flex-col items-center">
                  <FormLabel className="font-semibold w-full text-center md:text-left">Imagem de Capa</FormLabel>
-                 <div className="w-full aspect-[3/4] bg-muted rounded-lg overflow-hidden relative border">
+                 <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden relative border">
                     {capaUrl ? (
                          <Image 
                             src={capaUrl}
@@ -152,56 +184,104 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
             </div>
             <div className="md:col-span-2 space-y-6">
                 <FormField
-                control={form.control}
-                name="titulo"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel className="font-semibold">Título</FormLabel>
-                    <FormControl>
-                        <Input placeholder="Ex: Tatuagens Florais Minimalistas" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="descricao"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel className="font-semibold">Descrição</FormLabel>
-                    <FormControl>
-                        <Textarea
-                        placeholder="Descreva a essência da sua coleção. Para quem ela é?"
-                        className="min-h-24"
-                        {...field}
-                        />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel className="font-semibold">Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    control={form.control}
+                    name="titulo"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-semibold">Título</FormLabel>
                         <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione o status" />
-                        </SelectTrigger>
+                            <Input placeholder="Ex: Tatuagens Florais Minimalistas" {...field} />
                         </FormControl>
-                        <SelectContent>
-                        <SelectItem value="rascunho">Rascunho</SelectItem>
-                        <SelectItem value="publicada">Publicada</SelectItem>
-                        <SelectItem value="pausada">Pausada</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                    </FormItem>
-                )}
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="descricao"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-semibold">Descrição</FormLabel>
+                        <FormControl>
+                            <Textarea
+                            placeholder="Descreva a essência da sua coleção. Para quem ela é?"
+                            className="min-h-24"
+                            {...field}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="publico_alvo"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel className="font-semibold">Público-alvo</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Ex: Mulheres de 20-35 anos" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="preco"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="font-semibold">Preço (BRL)</FormLabel>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm">R$</span>
+                                    <FormControl>
+                                        <Input type="number" placeholder="49.90" className="pl-9" {...field} />
+                                    </FormControl>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                 <FormField
+                    control={form.control}
+                    name="tags_gerais"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-semibold">Tags Gerais</FormLabel>
+                        <FormControl>
+                           <StringToArrayInput
+                                value={field.value ?? ''}
+                                onChange={field.onChange}
+                                placeholder="floral, minimalista, 2026"
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-semibold">Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="rascunho">Rascunho</SelectItem>
+                            <SelectItem value="publicada">Publicada</SelectItem>
+                            <SelectItem value="pausada">Pausada</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
             </div>
           </CardContent>

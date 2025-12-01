@@ -17,7 +17,6 @@ export function SalesTab({ book }: SalesTabProps) {
             <AnalyticsCard />
         </div>
         <div className="space-y-8">
-            <PricingCard book={book} />
             <SalesChannelsCard />
         </div>
     </div>
