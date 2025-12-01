@@ -18,6 +18,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['var(--font-sans)', 'sans-serif'],
+        heading: ['Calistoga', 'serif'],
         code: ['Source Code Pro', 'monospace'],
       },
       colors: {
