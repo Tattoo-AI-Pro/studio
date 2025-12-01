@@ -43,12 +43,14 @@ service cloud.firestore {
     // Rules for the 'series' collection.
     // This is the primary collection for tattoo series (AI-Books).
     match /series/{serieId} {
-      // Allow public read for landing pages, but require login to list.
+      // Allow public read for landing pages.
       allow get: if true;
       
-      // CRITICAL: Allow listing ONLY when the query is filtered by the user's own ID.
-      // This prevents users from listing series they do not own.
-      allow list: if isSignedIn() && request.query.where.get("autor_id", [""])[2] == request.auth.uid;
+      // Allow listing under two conditions:
+      // 1. For signed-in users querying their own drafts/published series.
+      // 2. For anyone (signed-in or not) querying ONLY for 'publicada' series.
+      allow list: if (isSignedIn() && request.query.where.get("autor_id", [""])[2] == request.auth.uid) || 
+                     (request.query.where.get("status", [""])[2] == "publicada");
       
       // Any signed-in user can create a new series.
       // Ownership is established by the `autor_id` field in the document.

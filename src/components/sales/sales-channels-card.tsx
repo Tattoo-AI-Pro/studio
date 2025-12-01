@@ -31,10 +31,10 @@ export function SalesChannelsCard() {
     const { toast } = useToast();
 
     const copyLink = () => {
-        navigator.clipboard.writeText("https://seuestudio.com/vender/123-abc");
+        // navigator.clipboard.writeText("https://seuestudio.com/vender/123-abc");
         toast({
-            title: "Link Copiado",
-            description: "Seu link de vendas universal foi copiado.",
+            title: "Funcionalidade em breve",
+            description: "A cópia do link universal estará disponível em breve.",
         });
     }
 
