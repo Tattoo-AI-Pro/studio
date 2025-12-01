@@ -1,160 +1,257 @@
-
 {
   "entities": {
-    "User": {
+    "AiBook": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+      "title": "AiBook",
       "type": "object",
-      "description": "Represents a user of the application.",
+      "description": "Represents an AI-Book, which is a collection of tattoo designs compiled and managed by the application.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user (matches Firebase Auth UID)."
+          "description": "Unique identifier for the AI-Book entity."
         },
-        "displayName": {
+        "name": {
           "type": "string",
-          "description": "The user's display name."
+          "description": "Name of the AI-Book."
         },
-        "email": {
+        "shortDescription": {
           "type": "string",
-          "format": "email",
-          "description": "The user's email address."
+          "description": "Short description of the AI-Book."
         },
-        "photoURL": {
+        "longDescription": {
           "type": "string",
-          "format": "uri",
-          "description": "URL of the user's profile picture."
+          "description": "Long description of the AI-Book."
+        },
+        "theme": {
+          "type": "string",
+          "description": "Theme of the AI-Book."
+        },
+        "targetAudience": {
+          "type": "string",
+          "description": "Target audience for the AI-Book."
+        },
+        "tags": {
+          "type": "string",
+          "description": "Tags associated with the AI-Book for SEO purposes."
+        },
+        "coverImageUrl": {
+          "type": "string",
+          "description": "URL of the cover image for the AI-Book.",
+          "format": "uri"
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the AI-Book."
+        },
+        "promotionalPrice": {
+          "type": "number",
+          "description": "Promotional price of the AI-Book (optional)."
+        },
+        "salesLink": {
+          "type": "string",
+          "description": "Link to the sales page for the AI-Book.",
+          "format": "uri"
         }
       },
-      "required": ["id", "email"]
+      "required": [
+        "id",
+        "name",
+        "shortDescription",
+        "longDescription",
+        "theme",
+        "targetAudience",
+        "tags",
+        "coverImageUrl",
+        "price"
+      ]
     },
-    "Serie": {
+    "Module": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Série",
+      "title": "Module",
       "type": "object",
-      "description": "Representa uma Série (Coleção ou AI-Book), que é o produto-mãe.",
+      "description": "Represents a module within an AI-Book, containing a set of tattoo images and related information.",
       "properties": {
-        "id": { "type": "string" },
-        "capa_url": { "type": "string", "format": "uri" },
-        "titulo": { "type": "string" },
-        "descricao": { "type": "string" },
-        "publico_alvo": { "type": "string" },
-        "preco": { "type": "number" },
-        "status": { "type": "string", "enum": ["rascunho", "publicada", "pausada"] },
-        "data_criacao": { "type": "string", "format": "date-time" },
-        "data_atualizacao": { "type": "string", "format": "date-time" },
-        "autor_id": { "type": "string" },
-        "tags_gerais": { "type": "array", "items": { "type": "string" } },
-        "modulos_count": { "type": "integer" },
-        "tatuagens_count": { "type": "integer" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Module entity."
+        },
+        "aiBookId": {
+          "type": "string",
+          "description": "Reference to AiBook. (Relationship: AiBook 1:N Module)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the module."
+        },
+        "subDescription": {
+          "type": "string",
+          "description": "Sub-description of the module."
+        },
+        "estimatedImageCount": {
+          "type": "number",
+          "description": "Estimated number of images in the module."
+        }
       },
-      "required": ["titulo", "status", "autor_id"]
+      "required": [
+        "id",
+        "aiBookId",
+        "name",
+        "subDescription",
+        "estimatedImageCount"
+      ]
     },
-    "Modulo": {
+    "Image": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Módulo",
+      "title": "Image",
       "type": "object",
-      "description": "Representa um módulo ou categoria dentro de uma Série.",
+      "description": "Represents a tattoo image within a module.",
       "properties": {
-        "id": { "type": "string" },
-        "titulo": { "type": "string" },
-        "descricao": { "type": "string" },
-        "ordem": { "type": "number" },
-        "data_criacao": { "type": "string", "format": "date-time" },
-        "data_atualizacao": { "type": "string", "format": "date-time" },
-        "tatuagens_count": { "type": "integer" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Image entity."
+        },
+        "moduleId": {
+          "type": "string",
+          "description": "Reference to Module. (Relationship: Module 1:N Image)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the tattoo image.",
+          "format": "uri"
+        },
+        "suggestedTitle": {
+          "type": "string",
+          "description": "Suggested title for the image generated by AI."
+        },
+        "aiDescription": {
+          "type": "string",
+          "description": "Description of the image generated by AI."
+        },
+        "categories": {
+          "type": "array",
+          "description": "Categories associated with the image (e.g., realism, fineline, female).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keywords": {
+          "type": "string",
+          "description": "Keywords associated with the image for search and SEO."
+        },
+        "copyMacro": {
+          "type": "string",
+          "description": "Macro copy for selling the image."
+        }
       },
-      "required": ["titulo", "ordem"]
-    },
-    "Tatuagem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Tatuagem",
-      "type": "object",
-      "description": "Representa uma tatuagem individual, o coração do AI-Book.",
-      "properties": {
-        "id": { "type": "string" },
-        "capa_url": { "type": "string", "format": "uri" },
-        "titulo": { "type": "string" },
-        "descricao_contextual": { "type": "string" },
-        "tema": { "type": "string" },
-        "estilos": { "type": "array", "items": { "type": "string" } },
-        "significado_literal": { "type": "string" },
-        "significado_subjetivo": { "type": "string" },
-        "cores_usadas": { "type": "array", "items": { "type": "string" } },
-        "elementos_presentes": { "type": "array", "items": { "type": "string" } },
-        "tom_emocional": { "type": "string" },
-        "local_sugerido": { "type": "string" },
-        "simbolismo": { "type": "string" },
-        "referencia_cultural": { "type": "string" },
-        "tags": { "type": "array", "items": { "type": "string" } },
-        "likes": { "type": "integer" },
-        "comentarios_count": { "type": "integer" },
-        "compartilhamentos": { "type": "integer" },
-        "data_criacao": { "type": "string", "format": "date-time" },
-        "data_atualizacao": { "type": "string", "format": "date-time" },
-        "autor_id": { "type": "string" },
-        "origem": { "type": "string", "enum": ["manual", "IA"] }
-      },
-      "required": ["capa_url", "titulo", "autor_id", "origem"]
-    },
-    "Like": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Like",
-      "type": "object",
-      "description": "Representa a curtida de um usuário em uma tatuagem.",
-      "properties": {
-        "userId": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "timestamp"]
-    },
-    "Comentario": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Comentário",
-      "type": "object",
-      "description": "Representa um comentário de um usuário em uma tatuagem.",
-      "properties": {
-        "id": { "type": "string" },
-        "user_id": { "type": "string" },
-        "texto": { "type": "string" },
-        "data_criacao": { "type": "string", "format": "date-time" }
-      },
-      "required": ["user_id", "texto", "data_criacao"]
+      "required": [
+        "id",
+        "moduleId",
+        "imageUrl",
+        "suggestedTitle",
+        "aiDescription",
+        "categories",
+        "keywords",
+        "copyMacro"
+      ]
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/User" },
-      "description": "Stores public user profile information."
-    },
-    "/series/{serieId}": {
-      "schema": { "$ref": "#/entities/Serie" },
-      "description": "Coleção principal para as Séries (AI-Books).",
-      "subcollections": {
-        "/modulos/{moduloId}": {
-          "schema": { "$ref": "#/entities/Modulo" },
-          "description": "Subcoleção para os módulos dentro de uma Série.",
-          "subcollections": {
-            "/tatuagens/{tatuagemId}": {
-              "schema": { "$ref": "#/entities/Tatuagem" },
-              "description": "Subcoleção para as tatuagens dentro de um módulo.",
-              "subcollections": {
-                "/likes/{userId}": {
-                  "schema": { "$ref": "#/entities/Like" },
-                  "description": "Usuários que curtiram a tatuagem."
-                },
-                "/comentarios/{commentId}": {
-                  "schema": { "$ref": "#/entities/Comentario" },
-                  "description": "Comentários na tatuagem."
-                }
-              }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/user"
+          },
+          "description": "Represents a user of the application. This path serves as the root for all user-specific data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
             }
-          }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/aiBooks/{aiBookId}",
+        "definition": {
+          "entityName": "AiBook",
+          "schema": {
+            "$ref": "#/backend/entities/AiBook"
+          },
+          "description": "Represents an AI-Book created by the user.  This path enforces user ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the AI-Book)."
+            },
+            {
+              "name": "aiBookId",
+              "description": "The unique identifier for the AI-Book."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}",
+        "definition": {
+          "entityName": "Module",
+          "schema": {
+            "$ref": "#/backend/entities/Module"
+          },
+          "description": "Represents a module within an AI-Book, created by the user. This path enforces user ownership and AI-Book context.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the AI-Book and Module)."
+            },
+            {
+              "name": "aiBookId",
+              "description": "The unique identifier for the AI-Book that contains the module."
+            },
+            {
+              "name": "moduleId",
+              "description": "The unique identifier for the Module."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}/images/{imageId}",
+        "definition": {
+          "entityName": "Image",
+          "schema": {
+            "$ref": "#/backend/entities/Image"
+          },
+          "description": "Represents an image within a module in an AI-Book, created by the user. This path enforces user ownership, AI-Book context, and module context.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the AI-Book, Module, and Image)."
+            },
+            {
+              "name": "aiBookId",
+              "description": "The unique identifier for the AI-Book that contains the module."
+            },
+            {
+              "name": "moduleId",
+              "description": "The unique identifier for the Module that contains the image."
+            },
+            {
+              "name": "imageId",
+              "description": "The unique identifier for the Image."
+            }
+          ]
         }
       }
-    }
+    ],
+    "reasoning": "This Firestore structure is designed to support the \"AI-Book Factory\" application, focusing on secure, scalable, and debuggable data management. The structure is optimized for AI-Book creation, module management, image analysis, and sales/distribution, as outlined in the application's core features.  It emphasizes authorization independence, clarity, and predictable schemas for simplified security rules. All paths follow a strict ownership model, rooted in the user's UID, and avoids relying on complex authorization logic. \n\n**Authorization Independence and Data Denormalization:**\n\n*   AiBooks, Modules, and Images are stored under the user's document using hierarchical paths.  This allows the system to secure each level of the product hierarchy and ensure complete ownership. No denormalization of user data is required, as the user ID is encoded in the path itself.\n\n**Structural Segregation:**\n\n*   Data with different security needs are segregated into separate collections. User-specific AI-Books, modules, and images are stored under `/users/{userId}`, while global data (if any) would reside in separate top-level collections with different security rules.\n\n**Access Modeling:**\n\n*   Private data is enforced through path-based ownership (`/users/{userId}/aiBooks/{aiBookId}`).\n*   User-owned entities follow the pattern `/users/{userId}/{entity}/{entityId}` for 1:N relationships.\n\n**QAPs Support:**\n\n*   The structure allows for secure listing of AI-Books, modules, and images owned by a specific user. Rules can easily enforce that only the user identified by `{userId}` can list resources under their path."
   }
 }

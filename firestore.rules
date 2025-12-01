@@ -1,69 +1,114 @@
-
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model where all
+ * data is considered private and is nested within a user-specific data tree.
+ * The primary security mechanism is path-based authorization, ensuring that a
+ * user can only access documents located under their own unique user ID.
+ *
+ * Data Structure: All application data is organized hierarchically under the
+ * `/users/{userId}` collection. This includes a user's AI Books, their modules,
+ * and the images within those modules. This structure creates a natural and
+ * secure boundary for each user's data.
+ *
+ * Key Security Decisions:
+ * - User Isolation: All access checks are based on the `{userId}` in the path,
+ *   guaranteeing that users cannot see or modify another user's data.
+ * - No Public Data: There are no top-level public collections. All data requires
+ *   user authentication and ownership.
+ * - User Listing Disabled: It is explicitly forbidden to query or list the
+ *   top-level `/users` collection to protect user privacy.
+ * - Relational Integrity: On document creation and updates, rules validate that
+ *   foreign key fields (e.g., `aiBookId`, `moduleId`) are set correctly and remain
+ *   immutable, preventing documents from being moved between different parent
+ *   documents.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ------------------------------------------------------------------------
-    // Helper Functions
-    // ------------------------------------------------------------------------
+    // Helper functions for readable and maintainable rules.
+
+    /**
+     * Checks if a user is authenticated.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(resource) {
-      return request.auth.uid == resource.data.autor_id;
-    }
-    
-    function isRequestingUser(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function requestAssignsOwner() {
-      return request.resource.data.autor_id == request.auth.uid;
+    /**
+     * Checks if the currently authenticated user's UID matches the
+     * provided userId, typically from the document path. This is the
+     * primary function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    function getSerie(serieId) {
-      return get(/databases/$(database)/documents/series/$(serieId));
-    }
-    
-    // ------------------------------------------------------------------------
-    // Collection Rules
-    // ------------------------------------------------------------------------
-
+    /**
+     * @description
+     * A user's root document, containing profile information. Users can create,
+     * read, and update their own document, but cannot delete it to prevent
+     * orphaning subcollection data. Listing all users is forbidden for privacy.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own user document: `auth.uid == 'user_abc'`, creating `/users/user_abc`.
+     * @deny (list) Any user attempting to get a list of all users in the app.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
     match /users/{userId} {
-      allow get: if true;
-      allow create, update: if isRequestingUser(userId);
-      allow delete: if false; 
-    }
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && resource != null;
+      allow delete: if false;
 
-    match /series/{serieId} {
-      allow get: if true;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && requestAssignsOwner();
-      allow update: if isSignedIn() && isOwner(resource);
-      allow delete: if isSignedIn() && isOwner(resource);
+      /**
+       * @description
+       * An AI-Book created by a user. Only the owner of the user document
+       * can perform any action (create, read, update, delete) on their own AI-Books.
+       * @path /users/{userId}/aiBooks/{aiBookId}
+       * @allow (create) User 'user_abc' creating a new AI-Book document in `/users/user_abc/aiBooks/`.
+       * @deny (get) User 'user_xyz' trying to read an AI-Book from `/users/user_abc/aiBooks/{aiBookId}`.
+       * @principle Enforces strict ownership for a user's primary resources.
+       */
+      match /aiBooks/{aiBookId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId) && resource != null;
+        allow delete: if isOwner(userId) && resource != null;
 
-      match /modulos/{moduloId} {
-        allow read: if true;
-        allow write: if isSignedIn() && getSerie(serieId).data.autor_id == request.auth.uid;
+        /**
+         * @description
+         * A module within a user's AI-Book. Access is restricted to the owner.
+         * Rules also ensure that the `aiBookId` field within the module document
+         * correctly points to its parent AI-Book and cannot be changed.
+         * @path /users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}
+         * @allow (create) User 'user_abc' creating a module in their own book with `aiBookId` set correctly.
+         * @deny (update) User 'user_abc' trying to change the `aiBookId` on an existing module.
+         * @principle Enforces ownership and relational integrity between a module and its parent AI-Book.
+         */
+        match /modules/{moduleId} {
+          allow get: if isOwner(userId);
+          allow list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.aiBookId == aiBookId;
+          allow update: if isOwner(userId) && resource != null && request.resource.data.aiBookId == resource.data.aiBookId;
+          allow delete: if isOwner(userId) && resource != null;
 
-        match /tatuagens/{tatuagemId} {
-          allow read: if true;
-          allow write: if isSignedIn() && getSerie(serieId).data.autor_id == request.auth.uid;
-
-          match /likes/{userId} {
-            allow read: if true;
-            allow create: if isSignedIn() && isRequestingUser(userId);
-            allow delete: if isSignedIn() && isRequestingUser(userId);
-            allow update: if false;
-          }
-
-          match /comentarios/{commentId} {
-            allow read: if true;
-            allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
-            allow update: if isSignedIn() && isOwner(resource);
-            allow delete: if isSignedIn() && isOwner(resource);
+          /**
+           * @description
+           * An image within a module. Access is restricted to the owner. Rules
+           * ensure the `moduleId` field within the image document correctly
+           * points to its parent module and cannot be changed after creation.
+           * @path /users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}/images/{imageId}
+           * @allow (list) User 'user_abc' listing all images within one of their modules.
+           * @deny (create) User 'user_abc' creating an image but with a mismatched `moduleId` in the data.
+           * @principle Enforces ownership and relational integrity between an image and its parent module.
+           */
+          match /images/{imageId} {
+            allow get: if isOwner(userId);
+            allow list: if isOwner(userId);
+            allow create: if isOwner(userId) && request.resource.data.moduleId == moduleId;
+            allow update: if isOwner(userId) && resource != null && request.resource.data.moduleId == resource.data.moduleId;
+            allow delete: if isOwner(userId) && resource != null;
           }
         }
       }
