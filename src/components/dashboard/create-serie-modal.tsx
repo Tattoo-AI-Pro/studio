@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, serverTimestamp, addDoc, writeBatch, doc } from 'firebase/firestore';
 import { LoaderCircle, PlusCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,25 +71,22 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
       capa_url: `https://picsum.photos/seed/${title.replace(/\s+/g, '-')}/600/800`,
       modulos_count: 0,
       tatuagens_count: 0,
-      modulos: [],
       data_criacao: serverTimestamp(),
       data_atualizacao: serverTimestamp(),
     };
 
     try {
       const seriesCollection = collection(firestore, 'series');
-      const docRef = await addDocumentNonBlocking(seriesCollection, newSerieData);
+      // Use addDoc and get the returned DocumentReference
+      const docRef = await addDoc(seriesCollection, newSerieData);
       
       toast({
         title: 'Coleção criada!',
         description: `"${title}" foi criada com sucesso.`,
       });
 
-      if (docRef) {
-        router.push(`/books/${docRef.id}`);
-      } else {
-        throw new Error("Falha ao obter referência do documento.");
-      }
+      router.push(`/books/${docRef.id}`);
+
     } catch (error) {
       console.error('Error creating new serie:', error);
       toast({
@@ -97,7 +94,8 @@ export function CreateSerieModal({ open, onOpenChange }: CreateSerieModalProps) 
         title: 'Erro ao criar coleção',
         description: 'Não foi possível criar a coleção. Tente novamente.',
       });
-      setIsCreating(false);
+    } finally {
+        setIsCreating(false);
     }
   };
 

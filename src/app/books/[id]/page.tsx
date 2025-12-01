@@ -58,7 +58,6 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
     const bookWithDefaults: Serie = {
         ...{
             titulo: '',
-            modulos: [],
             preco: 0,
             publico_alvo: '',
             descricao: '',
@@ -72,7 +71,6 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
             tatuagens_count: 0,
         },
         ...book,
-        modulos: book.modulos ?? [],
         preco: book.preco ?? 0,
     }
 
@@ -138,5 +136,3 @@ export default function BookEditorPage({ params: paramsPromise }: { params: Prom
         </div>
     );
 }
-
-    

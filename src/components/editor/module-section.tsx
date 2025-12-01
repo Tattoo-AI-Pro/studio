@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { UploadCloud, LoaderCircle, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +9,8 @@ import type { Modulo, Tatuagem } from "@/lib/types";
 import { ImageCard } from "./image-card";
 import { Separator } from "@/components/ui/separator";
 import { analyzeImageAndGenerateContent, type ImageAnalysisOutput } from "@/ai/flows/image-analysis-content-generation";
-import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp, doc, writeBatch } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,6 @@ import { MoreVertical } from "lucide-react";
 interface ModuleSectionProps {
   module: Modulo;
   onEditImage: (image: Tatuagem) => void;
-  onImagesChange: (images: Tatuagem[]) => void;
   bookId: string;
   onEditModule: () => void;
   onDeleteModule: () => void;
@@ -32,7 +31,6 @@ interface ModuleSectionProps {
 export function ModuleSection({ 
     module, 
     onEditImage, 
-    onImagesChange, 
     bookId, 
     onEditModule, 
     onDeleteModule 
@@ -42,69 +40,71 @@ export function ModuleSection({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const tattoosQuery = useMemoFirebase(() => {
+    if (!bookId || !module.id) return null;
+    return collection(firestore, `series/${bookId}/modulos/${module.id}/tatuagens`);
+  }, [firestore, bookId, module.id]);
+
+  const { data: tattoos, isLoading: isLoadingTattoos } = useCollection<Tatuagem>(tattoosQuery);
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0 || !user) return;
+    if (!files || files.length === 0 || !user || !tattoosQuery) return;
 
     setIsUploading(true);
+    const newUploadCount = files.length;
 
     try {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        return new Promise<Tatuagem | null>((resolve, reject) => {
+      const batch = writeBatch(firestore);
+
+      for (const file of Array.from(files)) {
           const reader = new FileReader();
-          reader.onload = async (e) => {
-            try {
-              const imageDataUri = e.target?.result as string;
-              
-              const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent({ imageDataUri });
+          const dataUri = await new Promise<string>((resolve) => {
+              reader.onload = (e) => resolve(e.target?.result as string);
+              reader.readAsDataURL(file);
+          });
 
-              const newTatuagem: Omit<Tatuagem, "id" | "data_criacao" | "data_atualizacao"> = {
-                capa_url: imageDataUri,
-                titulo: aiContent.suggestedName,
-                descricao_contextual: aiContent.description,
-                tema: aiContent.theme,
-                estilos: [aiContent.style],
-                significado_literal: aiContent.significado_literal,
-                significado_subjetivo: aiContent.significado_subjetivo,
-                cores_usadas: aiContent.cores_usadas,
-                elementos_presentes: aiContent.elementos_presentes,
-                tom_emocional: aiContent.tom_emocional,
-                local_sugerido: aiContent.local_sugerido,
-                simbolismo: aiContent.simbolismo,
-                referencia_cultural: aiContent.referencia_cultural,
-                tags: aiContent.seoTags,
-                likes: 0,
-                comentarios_count: 0,
-                compartilhamentos: 0,
-                autor_id: user.uid,
-                origem: 'IA',
-              };
+          const aiContent: ImageAnalysisOutput = await analyzeImageAndGenerateContent({ imageDataUri: dataUri });
 
-              const tatuagensCollection = collection(firestore, `series/${bookId}/modulos/${module.id}/tatuagens`);
-              const docRef = await addDocumentNonBlocking(tatuagensCollection, {
-                  ...newTatuagem,
-                  data_criacao: serverTimestamp(),
-                  data_atualizacao: serverTimestamp()
-              });
-
-              resolve({ ...newTatuagem, id: docRef.id, data_criacao: new Date(), data_atualizacao: new Date() });
-
-            } catch (error) {
-              console.error("Error during AI analysis or Firestore save:", error);
-              reject(error);
-            }
+          const newTatuagemData: Omit<Tatuagem, "id"> = {
+            capa_url: dataUri, // Initially use Data URI, could be replaced by a storage URL
+            titulo: aiContent.suggestedName,
+            descricao_contextual: aiContent.description,
+            tema: aiContent.theme,
+            estilos: [aiContent.style],
+            significado_literal: aiContent.significado_literal,
+            significado_subjetivo: aiContent.significado_subjetivo,
+            cores_usadas: aiContent.cores_usadas,
+            elementos_presentes: aiContent.elementos_presentes,
+            tom_emocional: aiContent.tom_emocional,
+            local_sugerido: aiContent.local_sugerido,
+            simbolismo: aiContent.simbolismo,
+            referencia_cultural: aiContent.referencia_cultural,
+            tags: aiContent.seoTags,
+            likes: 0,
+            comentarios_count: 0,
+            compartilhamentos: 0,
+            autor_id: user.uid,
+            origem: 'IA',
+            data_criacao: serverTimestamp(),
+            data_atualizacao: serverTimestamp(),
           };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+
+          const newTattooRef = doc(tattoosQuery);
+          batch.set(newTattooRef, newTatuagemData);
+      }
+      
+      // Update tattoo count on the module
+      const moduleRef = doc(firestore, `series/${bookId}/modulos/${module.id}`);
+      batch.update(moduleRef, {
+        tatuagens_count: (module.tatuagens_count ?? 0) + newUploadCount
       });
 
-      const newImages = (await Promise.all(uploadPromises)).filter(img => img !== null) as Tatuagem[];
-      onImagesChange([...(module.tatuagens ?? []), ...newImages]);
+      await batch.commit();
 
     } catch (error) {
       console.error("Error uploading files:", error);
@@ -114,9 +114,9 @@ export function ModuleSection({
     }
   };
 
-  const sortedTattoos = (module.tatuagens ?? []).sort((a, b) => {
-    const dateA = a.data_criacao?.toDate?.() ?? 0;
-    const dateB = b.data_criacao?.toDate?.() ?? 0;
+  const sortedTattoos = (tattoos ?? []).sort((a, b) => {
+    const dateA = a.data_criacao?.toDate?.() ?? new Date(0);
+    const dateB = b.data_criacao?.toDate?.() ?? new Date(0);
     if(dateA < dateB) return -1;
     if(dateA > dateB) return 1;
     return 0;
@@ -178,7 +178,13 @@ export function ModuleSection({
       </CardHeader>
       <Separator />
       <CardContent className="p-4 md:p-6">
-        {(!module.tatuagens || module.tatuagens.length === 0) && !isUploading && (
+        {isLoadingTattoos && (
+            <div className="text-center py-8">
+                 <LoaderCircle className="w-8 h-8 text-primary animate-spin mx-auto" />
+                 <p className="text-sm text-muted-foreground mt-2">Carregando tatuagens...</p>
+            </div>
+        )}
+        {!isLoadingTattoos && (!tattoos || tattoos.length === 0) && !isUploading && (
             <div className="text-center py-8">
                 <h3 className="font-semibold">Nenhuma Tatuagem</h3>
                 <p className="text-sm text-muted-foreground">Comece fazendo o upload de imagens para este módulo.</p>

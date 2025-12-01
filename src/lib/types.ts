@@ -44,7 +44,7 @@ export interface Modulo {
   data_criacao: any;
   data_atualizacao: any;
   tatuagens_count: number;
-  tatuagens?: Tatuagem[];
+  // tatuagens?: Tatuagem[]; // This is deprecated, tattoos are now a subcollection
 }
 
 export interface Serie {
@@ -61,7 +61,7 @@ export interface Serie {
   tags_gerais: string[];
   modulos_count: number;
   tatuagens_count: number;
-  modulos?: Modulo[];
+  // modulos?: Modulo[]; // This is deprecated, modules are now a subcollection
 }
 
 // Legacy types for gradual migration if needed
