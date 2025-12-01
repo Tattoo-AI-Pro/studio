@@ -113,5 +113,28 @@ service cloud.firestore {
         }
       }
     }
+    match /series/{serieId} {
+      allow get: if true;
+      allow list: if isSignedIn() && request.query.where.get('autor_id', [''])[2] == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.autor_id == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.autor_id == request.auth.uid;
+
+      match /modulos/{moduloId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+        allow delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+
+        match /tatuagens/{tatuagemId} {
+          allow get: if true;
+          allow list: if true;
+          allow create: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+          allow update: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+          allow delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+        }
+      }
+    }
   }
 }
