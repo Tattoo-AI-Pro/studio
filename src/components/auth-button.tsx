@@ -5,7 +5,7 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import { LogIn, LogOut, User as UserIcon, LoaderCircle } from "lucide-react";
+import { LogIn, LogOut, User as UserIcon, LoaderCircle, ChevronDown } from "lucide-react";
 
 import { useAuth, useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,7 +63,7 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <Button onClick={handleLogin}>
+      <Button onClick={handleLogin} className="bg-primary hover:bg-primary/90 text-primary-foreground">
         <LogIn className="mr-2 h-4 w-4" /> Login com Google
       </Button>
     );
@@ -72,8 +72,8 @@ export function AuthButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-9 w-9">
+        <Button variant="ghost" className="relative h-9 w-auto px-2 py-1 flex items-center gap-2">
+          <Avatar className="h-8 w-8">
             <AvatarImage
               src={user.photoURL ?? ""}
               alt={user.displayName ?? "User"}
@@ -82,21 +82,22 @@ export function AuthButton() {
               {user.displayName?.charAt(0) ?? <UserIcon />}
             </AvatarFallback>
           </Avatar>
+          <ChevronDown className="h-4 w-4 text-white/80" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 bg-black/90 border-white/20 text-white" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
               {user.displayName}
             </p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="text-xs leading-none text-white/70">
               {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuSeparator className="bg-white/20"/>
+        <DropdownMenuItem onClick={handleLogout} className="focus:bg-white/10 focus:text-white cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

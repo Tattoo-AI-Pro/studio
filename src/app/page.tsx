@@ -1,197 +1,165 @@
+
 "use client";
 
-import { useState } from "react";
-import { Book, DollarSign, Image as ImageIcon, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Book, Search, User as UserIcon, Bell, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AuthButton } from "@/components/auth-button";
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { collection, query, where, orderBy, limit } from "firebase/firestore";
 import type { Serie } from "@/lib/types";
-import { CreateSerieModal } from "@/components/dashboard/create-serie-modal";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
-const dashboardMetrics = [
-  {
-    title: "Séries Criadas",
-    value: "12",
-    icon: Book,
-    description: "+2 este mês",
-    color: "text-primary",
-  },
-  {
-    title: "Tatuagens Gerenciadas",
-    value: "345",
-    icon: ImageIcon,
-    description: "+42 este mês",
-    color: "text-blue-500",
-  },
-  {
-    title: "Vendas Totais",
-    value: "R$ 1.876,50",
-    icon: DollarSign,
-    description: "+15% vs. mês passado",
-    color: "text-green-500",
-  },
-];
 
-function MyCollections() {
-  const firestore = useFirestore();
-  const { user } = useUser();
+function CollectionCarousel({ title, collections }: { title: string; collections: Serie[] }) {
+    if (!collections || collections.length === 0) return null;
 
-  const collectionsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return query(
-      collection(firestore, "series"),
-      where("autor_id", "==", user.uid)
-    );
-  }, [firestore, user]);
-
-  const { data: series, isLoading } = useCollection<Serie>(collectionsQuery);
-
-  if (isLoading) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
-        <p className="text-muted-foreground">Carregando coleções...</p>
-      </div>
+        <div className="space-y-4 py-8">
+            <h2 className="text-2xl font-bold px-4 md:px-8 lg:px-12">{title}</h2>
+             <Carousel
+                opts={{
+                    align: "start",
+                    loop: false,
+                    slidesToScroll: 'auto',
+                }}
+                 className="w-full"
+            >
+                <CarouselContent className="-ml-4">
+                    {collections.map((serie, index) => (
+                        <CarouselItem key={serie.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
+                             <div className="group relative aspect-video overflow-visible">
+                                <Card className="overflow-hidden bg-background transition-all duration-300 ease-in-out group-hover:scale-[1.15] group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-black/50">
+                                     <Link href={`/books/${serie.id}`} className="block">
+                                        <Image
+                                            src={serie.capa_url || `https://picsum.photos/seed/${serie.id}/480/270`}
+                                            alt={`Capa da coleção ${serie.titulo}`}
+                                            width={480}
+                                            height={270}
+                                            className="object-cover w-full h-full"
+                                            data-ai-hint="movie poster"
+                                        />
+                                    </Link>
+                                    <div className="absolute hidden transition-all duration-300 ease-in-out group-hover:block bottom-full mb-[-1.15rem] left-0 right-0 p-4 bg-background rounded-t-md w-[calc(100%*1.15)] transform origin-bottom scale-[0.869] z-20">
+                                         <h3 className="font-bold truncate text-foreground">{serie.titulo}</h3>
+                                         <p className="text-xs text-muted-foreground mt-1">{serie.modulos_count || 0} módulos • {serie.tatuagens_count || 0} tatuagens</p>
+                                    </div>
+                                </Card>
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                    <CarouselPrevious className="left-4" />
+                    <CarouselNext className="right-4" />
+                </div>
+            </Carousel>
+        </div>
     );
-  }
+}
 
-  if (!series || series.length === 0) {
-    return (
-      <div className="mt-4 rounded-lg border border-dashed border-muted-foreground/50 p-8 text-center">
-        <p className="text-muted-foreground">
-          Suas coleções de tatuagens aparecerão aqui.
-        </p>
-      </div>
-    );
-  }
+function NetflixHeader() {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="grid gap-6 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {series.map((serie) => {
-        const coverImage = serie.capa_url;
-
-        return (
-          <Link key={serie.id} href={`/books/${serie.id}`} className="group block">
-            <Card className="overflow-hidden relative aspect-[3/4] bg-card">
-              {coverImage ? (
-                <Image
-                  src={coverImage}
-                  alt={`Capa da coleção ${serie.titulo}`}
-                  fill
-                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                  data-ai-hint="book cover"
-                />
-              ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Book className="w-12 h-12 text-muted-foreground" />
-                  </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-4">
-                <h3 className="font-semibold text-lg text-white truncate">{serie.titulo}</h3>
-              </div>
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Pencil className="w-8 h-8 text-white" />
-              </div>
-            </Card>
-          </Link>
-        )
-    })}
-    </div>
+    <header className={cn(
+        "fixed top-0 left-0 right-0 z-50 flex h-16 items-center gap-4 px-4 md:px-8 transition-colors duration-300",
+        isScrolled ? "bg-black/90 backdrop-blur-sm" : "bg-transparent"
+    )}>
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold md:text-base text-primary">
+            <span className="font-black text-2xl tracking-tighter">TATTOOFLIX</span>
+        </Link>
+        <nav className="hidden md:flex items-center gap-4 ml-8">
+            {['Coleções', 'Estilos', 'Tendências'].map(item => (
+                <Link key={item} href="#" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
+                    {item}
+                </Link>
+            ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="text-white">
+                <Search className="h-5 w-5" />
+            </Button>
+             <Button variant="ghost" size="icon" className="text-white">
+                <Bell className="h-5 w-5" />
+            </Button>
+            <AuthButton />
+        </div>
+    </header>
   )
 }
 
+export default function NetflixBrowsePage() {
+  const firestore = useFirestore();
+  const { user } = useUser();
 
-export default function DashboardPage() {
-  const { user, isUserLoading } = useUser();
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const trendingQuery = useMemoFirebase(() => {
+    return query(
+      collection(firestore, "series"),
+      orderBy("data_criacao", "desc"),
+      limit(12)
+    );
+  }, [firestore]);
+  
+  const { data: trendingSeries, isLoading: isLoadingTrending } = useCollection<Serie>(trendingQuery);
+
+  // You would have more queries for other carousels
+  const newReleasesSeries = useMemoFirebase(() => {
+    // a different query
+    return query(
+      collection(firestore, "series"),
+      orderBy("data_atualizacao", "desc"),
+      limit(12)
+    );
+  }, [firestore]);
+
+  const { data: newReleases, isLoading: isLoadingNew } = useCollection<Serie>(newReleasesSeries);
+
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6 z-10">
-        <div className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <Book className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-xl tracking-wide truncate">
-            Estúdio de Tatuagem
-          </span>
+    <div className="flex min-h-screen w-full flex-col bg-black text-white">
+      <NetflixHeader />
+      <main className="flex-1 pt-16">
+        {/* Hero Section Placeholder */}
+        <div className="h-[60vh] w-full bg-gradient-to-t from-black via-transparent to-black flex items-center justify-center">
+            <h1 className="text-4xl font-bold">HERO SECTION - COMING SOON</h1>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <ThemeToggle />
-          <AuthButton />
-        </div>
-      </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center">
-          <div>
-            <h1 className="font-semibold text-3xl">
-              Dashboard
-            </h1>
-            {!isUserLoading && user && (
-              <p className="text-muted-foreground">
-                Bem-vindo(a) de volta, {user.displayName?.split(" ")[0]}!
-              </p>
+        
+        <div className="flex flex-col gap-4 -mt-24">
+            {isLoadingTrending ? (
+                <div className="h-48 flex items-center justify-center"><p>Carregando...</p></div>
+            ) : (
+                <CollectionCarousel title="Em Alta" collections={trendingSeries ?? []} />
             )}
-          </div>
-          {user && (
-             <CreateSerieModal open={isCreateModalOpen} onOpenChange={setCreateModalOpen} />
-          )}
+             {isLoadingNew ? (
+                <div className="h-48 flex items-center justify-center"><p>Carregando...</p></div>
+            ) : (
+                <CollectionCarousel title="Novidades da Semana" collections={newReleases ?? []} />
+            )}
+
+            {/* More carousels will go here */}
         </div>
-
-        {!user && !isUserLoading && (
-          <Card className="bg-card">
-            <CardHeader>
-              <CardTitle className="font-semibold">Bem-vindo ao Estúdio de Tatuagem</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Faça login para começar a criar e gerenciar suas coleções de
-                tatuagens.
-              </p>
-              <AuthButton />
-            </CardContent>
-          </Card>
-        )}
-
-        {user && (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {dashboardMetrics.map((metric) => (
-                <Card key={metric.title} className="bg-card">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {metric.title}
-                    </CardTitle>
-                    <metric.icon className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-2xl font-bold ${metric.color}`}>
-                      {metric.value}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {metric.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <h2 className="font-semibold text-2xl">
-                Minhas Coleções
-              </h2>
-              <MyCollections />
-            </div>
-          </>
-        )}
       </main>
     </div>
   );
