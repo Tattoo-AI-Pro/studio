@@ -1,138 +1,80 @@
-/**
- * Core Philosophy: This ruleset enforces a strict user-ownership model where all
- * data is considered private and is nested within a user-specific data tree.
- * The primary security mechanism is path-based authorization, ensuring that a
- * user can only access documents located under their own unique user ID.
- *
- * Data Structure: All application data is organized hierarchically under the
- * `/users/{userId}` collection. This includes a user's AI Books, their modules,
- * and the images within those modules. This structure creates a natural and
- * secure boundary for each user's data.
- *
- * Key Security Decisions:
- * - User Isolation: All access checks are based on the `{userId}` in the path,
- *   guaranteeing that users cannot see or modify another user's data.
- * - No Public Data: There are no top-level public collections. All data requires
- *   user authentication and ownership.
- * - User Listing Disabled: It is explicitly forbidden to query or list the
- *   top-level `/users` collection to protect user privacy.
- * - Relational Integrity: On document creation and updates, rules validate that
- *   foreign key fields (e.g., `aiBookId`, `moduleId`) are set correctly and remain
- *   immutable, preventing documents from being moved between different parent
- *   documents.
- */
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper functions for readable and maintainable rules.
-
-    /**
-     * Checks if a user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the
-     * provided userId, typically from the document path. This is the
-     * primary function for enforcing data ownership.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * @description
-     * A user's root document, containing profile information. Users can create,
-     * read, and update their own document, but cannot delete it to prevent
-     * orphaning subcollection data. Listing all users is forbidden for privacy.
-     * @path /users/{userId}
-     * @allow (create) An authenticated user creating their own user document: `auth.uid == 'user_abc'`, creating `/users/user_abc`.
-     * @deny (list) Any user attempting to get a list of all users in the app.
-     * @principle Restricts access to a user's own data tree and prevents user enumeration.
-     */
+    // Rules for the 'users' collection.
+    // This collection stores user profile data. Access is strictly limited
+    // to the user who owns the document.
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false;
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && resource != null;
+      allow update: if isOwner(userId);
+      
+      // Users cannot list other users or delete their own profile document.
+      allow list: if false;
       allow delete: if false;
 
-      /**
-       * @description
-       * An AI-Book created by a user. Only the owner of the user document
-       * can perform any action (create, read, update, delete) on their own AI-Books.
-       * @path /users/{userId}/aiBooks/{aiBookId}
-       * @allow (create) User 'user_abc' creating a new AI-Book document in `/users/user_abc/aiBooks/`.
-       * @deny (get) User 'user_xyz' trying to read an AI-Book from `/users/user_abc/aiBooks/{aiBookId}`.
-       * @principle Enforces strict ownership for a user's primary resources.
-       */
+      // Note: Subcollections under /users/{userId} that were part of a previous
+      // data model are now deprecated in favor of the top-level /series collection.
+      // The rules below ensure backward compatibility if needed but are not
+      // actively used by the new structure.
       match /aiBooks/{aiBookId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
-
-        /**
-         * @description
-         * A module within a user's AI-Book. Access is restricted to the owner.
-         * Rules also ensure that the `aiBookId` field within the module document
-         * correctly points to its parent AI-Book and cannot be changed.
-         * @path /users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}
-         * @allow (create) User 'user_abc' creating a module in their own book with `aiBookId` set correctly.
-         * @deny (update) User 'user_abc' trying to change the `aiBookId` on an existing module.
-         * @principle Enforces ownership and relational integrity between a module and its parent AI-Book.
-         */
+        allow read, write: if isOwner(userId);
         match /modules/{moduleId} {
-          allow get: if isOwner(userId);
-          allow list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.aiBookId == aiBookId;
-          allow update: if isOwner(userId) && resource != null && request.resource.data.aiBookId == resource.data.aiBookId;
-          allow delete: if isOwner(userId) && resource != null;
-
-          /**
-           * @description
-           * An image within a module. Access is restricted to the owner. Rules
-           * ensure the `moduleId` field within the image document correctly
-           * points to its parent module and cannot be changed after creation.
-           * @path /users/{userId}/aiBooks/{aiBookId}/modules/{moduleId}/images/{imageId}
-           * @allow (list) User 'user_abc' listing all images within one of their modules.
-           * @deny (create) User 'user_abc' creating an image but with a mismatched `moduleId` in the data.
-           * @principle Enforces ownership and relational integrity between an image and its parent module.
-           */
+          allow read, write: if isOwner(userId);
           match /images/{imageId} {
-            allow get: if isOwner(userId);
-            allow list: if isOwner(userId);
-            allow create: if isOwner(userId) && request.resource.data.moduleId == moduleId;
-            allow update: if isOwner(userId) && resource != null && request.resource.data.moduleId == resource.data.moduleId;
-            allow delete: if isOwner(userId) && resource != null;
+            allow read, write: if isOwner(userId);
           }
         }
       }
     }
-    match /series/{serieId} {
-      allow get: if true;
-      allow list: if isSignedIn() && request.query.where.get('autor_id', [''])[2] == request.auth.uid;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource.data.autor_id == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.autor_id == request.auth.uid;
 
+    // Rules for the 'series' collection.
+    // This is the primary collection for tattoo series (AI-Books).
+    match /series/{serieId} {
+      // Allow public read for landing pages, but require login to list.
+      allow get: if true;
+      
+      // CRITICAL: Allow listing ONLY when the query is filtered by the user's own ID.
+      // This prevents users from listing series they do not own.
+      allow list: if isSignedIn() && request.query.where.get("autor_id", [""])[2] == request.auth.uid;
+      
+      // Any signed-in user can create a new series.
+      // Ownership is established by the `autor_id` field in the document.
+      allow create: if isSignedIn();
+      
+      // Only the author of the series can update or delete it.
+      allow update, delete: if isSignedIn() && resource.data.autor_id == request.auth.uid;
+
+      // Rules for the 'modulos' subcollection within a series.
       match /modulos/{moduloId} {
+        // Anyone can read a module's details.
         allow get: if true;
         allow list: if true;
-        allow create: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
-        allow update: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
-        allow delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
 
+        // Only the author of the parent series can create, update, or delete modules.
+        // It checks the 'autor_id' of the parent series document.
+        allow create, update, delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+
+        // Rules for the 'tatuagens' subcollection within a module.
         match /tatuagens/{tatuagemId} {
+          // Anyone can read a tattoo's details.
           allow get: if true;
           allow list: if true;
-          allow create: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
-          allow update: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
-          allow delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
+
+          // Only the author of the parent series can create, update, or delete tattoos.
+          allow create, update, delete: if isSignedIn() && get(/databases/$(database)/documents/series/$(serieId)).data.autor_id == request.auth.uid;
         }
       }
     }
