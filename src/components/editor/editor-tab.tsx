@@ -179,27 +179,16 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
   return (
     <>
       <div className="space-y-8">
-        <SerieSettingsCard book={book} onBookUpdate={setBook} />
+        <SerieSettingsCard 
+          book={book} 
+          onBookUpdate={setBook}
+          onCreateModule={() => setCreateModuleOpen(true)}
+          onCompile={handleCompile}
+          isCompiling={isCompiling}
+        />
         
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <h2 className="font-semibold text-2xl">Editor de Módulos</h2>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setCreateModuleOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Adicionar Módulo
-            </Button>
-            <Button onClick={handleCompile} disabled={isCompiling}>
-                {isCompiling ? (
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
-                )}
-                Compilar AI-Book
-            </Button>
-          </div>
-        </div>
-
         <div className="space-y-12">
+          {sortedModules.length > 0 && <h2 className="font-semibold text-2xl">Módulos da Coleção</h2>}
           {sortedModules.map((module) => (
             <ModuleSection
               key={module.id}
@@ -212,11 +201,13 @@ export function EditorTab({ initialBookState }: EditorTabProps) {
           ))}
           {(!modules || modules.length === 0) && (
             <div className="text-center py-12 border border-dashed rounded-lg">
-              <p className="text-muted-foreground">
+              <h3 className="font-semibold text-xl">Coleção Vazia</h3>
+              <p className="text-muted-foreground mt-2">
                 Esta coleção ainda não possui módulos.
               </p>
-              <Button variant="link" onClick={() => setCreateModuleOpen(true)}>
-                Comece adicionando um módulo.
+              <Button variant="default" className="mt-4" onClick={() => setCreateModuleOpen(true)}>
+                 <PlusCircle className="mr-2 h-4 w-4" />
+                Adicionar primeiro módulo
               </Button>
             </div>
           )}

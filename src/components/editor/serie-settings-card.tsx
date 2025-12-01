@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { doc, serverTimestamp } from 'firebase/firestore';
-import { LoaderCircle, Save, Image as ImageIcon } from 'lucide-react';
+import { LoaderCircle, Save, Image as ImageIcon, PlusCircle, Sparkles } from 'lucide-react';
 import { useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { Serie } from '@/lib/types';
@@ -36,6 +36,9 @@ import { Badge } from '../ui/badge';
 interface SerieSettingsCardProps {
   book: Serie;
   onBookUpdate: (updatedBook: Serie) => void;
+  onCreateModule: () => void;
+  onCompile: () => void;
+  isCompiling: boolean;
 }
 
 const serieSchema = z.object({
@@ -68,7 +71,7 @@ const StringToArrayInput = ({ value, onChange, placeholder }: { value: string, o
     );
 };
 
-export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps) {
+export function SerieSettingsCard({ book, onBookUpdate, onCreateModule, onCompile, isCompiling }: SerieSettingsCardProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -146,42 +149,12 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
-            <CardTitle className="font-semibold text-2xl">Configurações da Série</CardTitle>
+            <CardTitle className="font-semibold text-2xl">Configurações da Coleção</CardTitle>
             <CardDescription className="font-sans text-base">
-              Edite as informações principais e a capa da sua coleção.
+              Edite as informações principais e a capa da sua coleção. Salve as alterações para vê-las refletidas.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-3 flex flex-col items-center">
-                 <FormLabel className="font-semibold w-full text-center md:text-left">Imagem de Capa</FormLabel>
-                 <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden relative border">
-                    {capaUrl ? (
-                         <Image 
-                            src={capaUrl}
-                            alt="Capa da coleção"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 80vw, 30vw"
-                            data-ai-hint="book cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center flex-col gap-2 text-muted-foreground">
-                            <ImageIcon className="w-10 h-10" />
-                            <span className="text-sm">Sem capa</span>
-                        </div>
-                    )}
-                 </div>
-                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                    Alterar Capa
-                 </Button>
-                 <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-            </div>
             <div className="md:col-span-2 space-y-6">
                 <FormField
                     control={form.control}
@@ -284,8 +257,38 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
                     )}
                 />
             </div>
+            <div className="space-y-3 flex flex-col items-center">
+                 <FormLabel className="font-semibold w-full text-center md:text-left">Imagem de Capa</FormLabel>
+                 <div className="w-full aspect-video bg-muted rounded-lg overflow-hidden relative border">
+                    {capaUrl ? (
+                         <Image 
+                            src={capaUrl}
+                            alt="Capa da coleção"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 80vw, 30vw"
+                            data-ai-hint="book cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center flex-col gap-2 text-muted-foreground">
+                            <ImageIcon className="w-10 h-10" />
+                            <span className="text-sm">Sem capa</span>
+                        </div>
+                    )}
+                 </div>
+                 <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                    Alterar Capa
+                 </Button>
+                 <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
+            </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex-col sm:flex-row items-center gap-2 border-t pt-6">
             <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
               {isSaving ? (
                 <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />
@@ -293,6 +296,19 @@ export function SerieSettingsCard({ book, onBookUpdate }: SerieSettingsCardProps
                 <Save className="w-4 h-4 mr-2" />
               )}
               Salvar Alterações
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" onClick={onCreateModule}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Adicionar Módulo
+            </Button>
+            <Button onClick={onCompile} disabled={isCompiling}>
+                {isCompiling ? (
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Compilar AI-Book
             </Button>
           </CardFooter>
         </form>
